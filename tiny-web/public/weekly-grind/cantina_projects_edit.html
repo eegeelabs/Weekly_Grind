@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weekly Grind ‚Äì Edit Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 1rem 1.5rem 2rem;
+      background: #0b1120;
+      color: #e5e7eb;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin: 0;
+    }
+    .meta {
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+    a.link {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+    .form-card {
+      max-width: 900px;
+      border-radius: 0.75rem;
+      border: 1px solid #111827;
+      background: #020617;
+      padding: 1rem 1.25rem 1.5rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem 1rem;
+      margin-top: 0.75rem;
+    }
+    label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .field-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+    input, select, textarea {
+      background: #020617;
+      border: 1px solid #1f2937;
+      color: #e5e7eb;
+      padding: 0.3rem 0.45rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .actions {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+    button {
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: #1d4ed8;
+      color: #e5e7eb;
+    }
+    button.secondary {
+      background: transparent;
+      color: #9ca3af;
+    }
+    button.danger {
+      background: #991b1b;
+      border-color: #7f1d1d;
+      color: #fee2e2;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .messages {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+    }
+    .messages .error {
+      color: #fecaca;
+    }
+    .messages .success {
+      color: #bbf7d0;
+    }
+    .required {
+      color: #f97316;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1 id="pageTitle">Edit Project</h1>
+      <div class="meta" id="pageSubtitle">Loading project‚Ä¶</div>
+    </div>
+    <div class="meta">
+      <a href="/weekly-grind/projects" class="link">‚Üê Back to Projects</a>
+    </div>
+  </header>
+
+  <div class="form-card">
+    <form id="projectForm" autocomplete="off">
+      <div class="form-grid">
+        <label>
+          <span class="field-label">PID<span class="required">*</span></span>
+          <input type="text" name="pid" id="pidInput" required readonly />
+        </label>
+        <label>
+          <span class="field-label">Client ID</span>
+          <input type="text" name="client_id" />
+        </label>
+        <label>
+          <span class="field-label">Project Name<span class="required">*</span></span>
+          <input type="text" name="project_name" required />
+        </label>
+        <label>
+          <span class="field-label">Status</span>
+          <select name="status">
+            <option value="open">open</option>
+            <option value="on_hold">on_hold</option>
+            <option value="complete">complete</option>
+            <option value="cancelled">cancelled</option>
+          </select>
+        </label>
+        <label>
+          <span class="field-label">Customer Temp (1‚Äì5)</span>
+          <input type="number" name="customer_temp" min="1" max="5" />
+        </label>
+        <label>
+          <span class="field-label">Date Opened<span class="required">*</span></span>
+          <input type="date" name="date_project_opened" required />
+        </label>
+        <label>
+          <span class="field-label">HW Received</span>
+          <input type="date" name="date_hardware_received" />
+        </label>
+        <label>
+          <span class="field-label">HW ETA</span>
+          <input type="date" name="hardware_eta" />
+        </label>
+        <label>
+          <span class="field-label">HW Desktops</span>
+          <input type="number" name="num_desktops" min="0" />
+        </label>
+        <label>
+          <span class="field-label">HW Laptops</span>
+          <input type="number" name="num_laptops" min="0" />
+        </label>
+        <label>
+          <span class="field-label"># Images</span>
+          <input type="number" name="num_images" min="0" />
+        </label>
+        <label>
+          <span class="field-label">Onsite / Ship</span>
+          <select name="onsite_or_ship">
+            <option value="">(none)</option>
+            <option value="onsite">onsite</option>
+            <option value="ship">ship</option>
+            <option value="mixed">mixed</option>
+          </select>
+        </label>
+        <label>
+          <span class="field-label">Onsite Scheduled?</span>
+          <select name="onsite_scheduled">
+            <option value="">(unknown)</option>
+            <option value="true">yes</option>
+            <option value="false">no</option>
+          </select>
+        </label>
+        <label>
+          <span class="field-label">Onsite Date</span>
+          <input type="date" name="onsite_date" />
+        </label>
+        <label>
+          <span class="field-label">Last Contact Date</span>
+          <input type="date" name="date_last_contacted" />
+        </label>
+        <label>
+          <span class="field-label">Last Contact Method</span>
+          <select name="contact_method">
+            <option value="">(none)</option>
+            <option value="call">call</option>
+            <option value="email">email</option>
+            <option value="meeting">meeting</option>
+          </select>
+        </label>
+      </div>
+
+      <label style="margin-top:0.75rem;">
+        <span class="field-label">Description / Notes</span>
+        <textarea name="description"></textarea>
+      </label>
+      <label style="margin-top:0.25rem;">
+        <span class="field-label">Internal Notes</span>
+        <textarea name="notes"></textarea>
+      </label>
+
+      <div class="actions">
+  	<button type="button" class="secondary" onclick="window.location.href='/weekly-grind/projects'">
+   	 Cancel
+	</button>
+	<button type="button" class="danger" id="deleteBtn">
+	 Delete
+	</button>
+        <button type="submit" id="submitBtn">
+        Save Changes
+        </button>
+      </div>
+
+      <div class="messages" id="messages"></div>
+    </form>
+  </div>
+
+   <script>
+    const form = document.getElementById('projectForm');
+    const messages = document.getElementById('messages');
+    const submitBtn = document.getElementById('submitBtn');
+    const pageTitle = document.getElementById('pageTitle');
+    const pageSubtitle = document.getElementById('pageSubtitle');
+    const pidInput = document.getElementById('pidInput');
+    const deleteBtn = document.getElementById('deleteBtn');
+
+    function setMessage(text, type) {
+      if (!text) {
+        messages.innerHTML = '';
+        return;
+      }
+      messages.innerHTML = '<span class="' + type + '">' + text + '</span>';
+    }
+
+    function val(name) {
+      return form.elements[name].value.trim();
+    }
+
+    function valOrNull(name) {
+      const v = val(name);
+      return v === '' ? null : v;
+    }
+
+    function fmtDateForInput(value) {
+      if (!value) return '';
+      return String(value).slice(0, 10);
+    }
+
+    function getPidFromPath() {
+      const parts = window.location.pathname.split('/').filter(Boolean);
+      // /weekly-grind/projects/:pid/edit -> ["weekly-grind","projects",":pid","edit"]
+      return decodeURIComponent(parts[2] || '');
+    }
+
+    async function loadProject() {
+      const pid = getPidFromPath();
+      if (!pid) {
+        setMessage('No PID in URL.', 'error');
+        return;
+      }
+
+      pidInput.value = pid;
+      pageTitle.textContent = 'Edit Project ' + pid;
+
+      try {
+        const res = await fetch('/api/projects/' + encodeURIComponent(pid), {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (!res.ok) {
+          setMessage('Failed to load project (HTTP ' + res.status + ').', 'error');
+          pageSubtitle.textContent = 'Could not load project.';
+          return;
+        }
+        const p = await res.json();
+
+        pageSubtitle.textContent = p.project_name || 'Edit project details';
+
+        form.elements['client_id'].value = p.client_id || '';
+        form.elements['project_name'].value = p.project_name || '';
+        form.elements['status'].value = p.status || 'open';
+        form.elements['customer_temp'].value = p.customer_temp != null ? p.customer_temp : '';
+        form.elements['date_project_opened'].value = fmtDateForInput(p.date_project_opened);
+        form.elements['date_hardware_received'].value = fmtDateForInput(p.date_hardware_received);
+        form.elements['hardware_eta'].value = fmtDateForInput(p.hardware_eta);
+        form.elements['num_desktops'].value = p.num_desktops != null ? p.num_desktops : '';
+        form.elements['num_laptops'].value = p.num_laptops != null ? p.num_laptops : '';
+        form.elements['num_images'].value = p.num_images != null ? p.num_images : '';
+        form.elements['onsite_or_ship'].value = p.onsite_or_ship || '';
+        if (p.onsite_scheduled === true) {
+          form.elements['onsite_scheduled'].value = 'true';
+        } else if (p.onsite_scheduled === false) {
+          form.elements['onsite_scheduled'].value = 'false';
+        } else {
+          form.elements['onsite_scheduled'].value = '';
+        }
+        form.elements['onsite_date'].value = fmtDateForInput(p.onsite_date);
+        form.elements['date_last_contacted'].value = fmtDateForInput(p.date_last_contacted);
+        form.elements['contact_method'].value = p.contact_method || '';
+        form.elements['description'].value = p.description || '';
+        form.elements['notes'].value = p.notes || '';
+      } catch (err) {
+        console.error('Failed to load project', err);
+        setMessage('Failed to load project.', 'error');
+        pageSubtitle.textContent = 'Error loading project.';
+      }
+    }
+
+    // Save (upsert) handler
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setMessage('', '');
+
+      const pid = pidInput.value.trim();
+      const project_name = val('project_name');
+      const date_project_opened = val('date_project_opened');
+
+      if (!pid || !project_name || !date_project_opened) {
+        setMessage('PID, Project Name, and Date Opened are required.', 'error');
+        return;
+      }
+
+      const payload = {
+        pid,
+        client_id: valOrNull('client_id'),
+        project_name,
+        description: valOrNull('description'),
+        num_desktops: valOrNull('num_desktops'),
+        num_laptops: valOrNull('num_laptops'),
+        num_images: valOrNull('num_images'),
+        onsite_or_ship: valOrNull('onsite_or_ship'),
+        onsite_scheduled: (() => {
+          const v = val('onsite_scheduled');
+          if (v === 'true') return true;
+          if (v === 'false') return false;
+          return null;
+        })(),
+        onsite_date: valOrNull('onsite_date'),
+        date_project_opened,
+        date_hardware_received: valOrNull('date_hardware_received'),
+        hardware_eta: valOrNull('hardware_eta'),
+        date_last_contacted: valOrNull('date_last_contacted'),
+        contact_method: valOrNull('contact_method'),
+        customer_temp: valOrNull('customer_temp'),
+        status: valOrNull('status') || 'open',
+        notes: valOrNull('notes')
+      };
+
+      try {
+        submitBtn.disabled = true;
+        deleteBtn.disabled = true;
+        setMessage('Saving changesÖ', 'success');
+
+        const res = await fetch('/api/projects', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const body = await res.json();
+
+        if (!res.ok) {
+          console.error('API error', body);
+          setMessage(body.error || 'Failed to save project.', 'error');
+          submitBtn.disabled = false;
+          deleteBtn.disabled = false;
+          return;
+        }
+
+        setMessage('Changes saved. RedirectingÖ', 'success');
+        setTimeout(() => {
+          window.location.href = '/weekly-grind/projects';
+        }, 600);
+      } catch (err) {
+        console.error('Request failed', err);
+        setMessage('Request failed. Check network or backend logs.', 'error');
+        submitBtn.disabled = false;
+        deleteBtn.disabled = false;
+      }
+    });
+
+    // Delete handler (separate from submit)
+    deleteBtn.addEventListener('click', async () => {
+      const pid = pidInput.value.trim();
+      if (!pid) {
+        setMessage('Cannot delete: PID is missing.', 'error');
+        return;
+      }
+
+      const sure = window.confirm(
+        `Delete project "${pid}"?\n\nThis is a permanent delete. This cannot be undone.`
+      );
+      if (!sure) return;
+
+      try {
+        deleteBtn.disabled = true;
+        submitBtn.disabled = true;
+        setMessage('Deleting projectÖ', 'success');
+
+        const res = await fetch('/api/projects/' + encodeURIComponent(pid), {
+          method: 'DELETE',
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+
+        if (!res.ok && res.status !== 204) {
+          let body = {};
+          try { body = await res.json(); } catch (_) {}
+          console.error('Delete error', body);
+          setMessage(body.error || 'Failed to delete project.', 'error');
+          deleteBtn.disabled = false;
+          submitBtn.disabled = false;
+          return;
+        }
+
+        setMessage('Project deleted. RedirectingÖ', 'success');
+        setTimeout(() => {
+          window.location.href = '/weekly-grind/projects';
+        }, 600);
+      } catch (err) {
+        console.error('Delete request failed', err);
+        setMessage('Delete request failed. Check network or backend logs.', 'error');
+        deleteBtn.disabled = false;
+        submitBtn.disabled = false;
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', loadProject);
+  </script>

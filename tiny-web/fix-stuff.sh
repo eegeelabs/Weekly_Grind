@@ -1,233 +1,426 @@
-cat > ~/tiny-web/patch-admin-save-from-dom.sh <<'SH'
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
-ADMIN="$HOME/tiny-web/public/weekly-grind/cantina_admin.html"
-ts="$(date +%s)"
-[[ -f "$ADMIN" ]] || { echo "ERROR: $ADMIN not found"; exit 1; }
-cp -f "$ADMIN" "$ADMIN.bak.$ts"
+# === Config ================================================================
+# Webroot can be passed as $1; defaults to your tiny-web public path.
+WEBROOT="${1:-$(cd "$(dirname "$0")" && pwd)/public/weekly-grind}"
+JS_DIR="$WEBROOT/js"
+CSS_DIR="$WEBROOT/css"
 
-# Replace the Admin page with a version that:
-# - Keeps your compact/5-column layout
-# - Auto-populates techs from techs.json
-# - Saves by READING THE DOM so what you typed is exactly what gets saved
-# - Adds a "Download CSV" button for quick verification
-cat > "$ADMIN" <<'HTML'
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Weekly Grind — Admin</title>
-<style>
-:root{
-  --tech-col:150px; --gap:4px; --pad:4px; --font:14px;
-  --soft:rgba(255,255,255,.08); --text:#e6e9ff; --muted:#8892b0;
-  --bg:#0f1220; --card:#171a2b;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:var(--font)/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-header{position:sticky;top:0;z-index:5;background:rgba(15,18,32,.9);border-bottom:1px solid var(--soft)}
-.wrap{max-width:1400px;margin:0 auto;padding:10px 12px}
-h1{margin:0;font-size:18px}
-select,button,input,textarea{background:#0d1224;border:1px solid var(--soft);color:var(--text);border-radius:8px;padding:2px 6px}
-button{cursor:pointer}
-main{padding:12px}
-.table-wrap{border:1px solid var(--soft);border-radius:14px;background:var(--card);overflow:hidden}
-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0}
-thead th{position:sticky;top:0;background:#1a1e33;color:#cbd5ff;border-bottom:1px solid var(--soft);font-weight:600;text-align:center;white-space:nowrap}
-th,td{padding:6px;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
-th:last-child,td:last-child{border-right:0}
-.sticky-left{position:sticky;left:0;background:#1a1e33;color:var(--text);font-weight:600;z-index:3}
-tbody .sticky-left{background:#151a2c;z-index:2}
-.cell{display:grid;grid-template-rows:auto auto auto;gap:var(--gap);min-height:110px}
-.row{display:grid;grid-template-columns:minmax(56px,max-content) 1fr;gap:var(--gap);align-items:center}
-.row select{width:auto;min-width:4ch;height:26px}
-input.s1p,input.s2p,textarea.text{padding:var(--pad)}
-textarea.text{resize:vertical;min-height:28px}
-.notes{grid-column:1 / -1}
-@media (max-width:1280px){:root{--tech-col:130px;--font:13px}th,td{padding:4px}}
-</style>
-</head><body>
-<header>
-  <div class="wrap" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-    <h1>Configuration Cantina — Admin</h1><div style="flex:1"></div>
-    <label>Week: <select id="week"></select></label>
-    <button id="save">Save to Server</button>
-    <button id="dl">Download CSV</button>
-    <a href="/weekly-grind/" style="margin-left:8px">View</a>
-    <span id="hint" style="margin-left:8px;color:var(--muted)">Ready</span>
-  </div>
-</header>
-<main class="wrap">
-  <div class="table-wrap">
-    <table>
-      <colgroup>
-        <col style="width:var(--tech-col)">
-        <col span="5" style="width:calc((100% - var(--tech-col))/5)">
-      </colgroup>
-      <thead><tr id="head"></tr></thead>
-      <tbody id="body"></tbody>
-    </table>
-  </div>
-</main>
+STAMP="$(date +%Y%m%d_%H%M%S)"
+BACKUP_ROOT="${HOME}/tiny-web/backup"
+BACKUP_DIR="${BACKUP_ROOT}/${STAMP}"
 
-<script>
-const TYPES=["","IMG","CFG","OnB","R/R","ADUM"];
-const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
-const head=$("#head"), body=$("#body"), week=$("#week"), hint=$("#hint"), saveBtn=$("#save"), dlBtn=$("#dl");
+mkdir -p "$JS_DIR" "$CSS_DIR" "$BACKUP_DIR"
 
-const isoLocal=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;}
-function mondayLocal(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());const w=x.getDay();x.setDate(x.getDate()+(w===0?-6:1-w));return x;}
-function dayLabels(monISO){const [Y,M,D]=monISO.split('-').map(Number);const base=new Date(Y,M-1,D);
-  return [0,1,2,3,4].map(n=>{const x=addDays(base,n);return{iso:isoLocal(x),label:x.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'2-digit'})};});}
-function parseCSV(t){const r=[];let i=0,f='',row=[],q=false;while(i<t.length){const c=t[i];
-  if(q){if(c=='"'&&t[i+1]=='"'){f+='"';i+=2;continue}if(c=='"'){q=false;i++;continue}f+=c;i++;continue}
-  if(c=='"'){q=true;i++;continue} if(c===','){row.push(f);f='';i++;continue}
-  if(c==='\\n'||c==='\\r'){if(f!==''||row.length){row.push(f);r.push(row)}row=[];f='';if(c==='\\r'&&t[i+1]==='\\n')i++;i++;continue}
-  f+=c;i++} if(f!==''||row.length){row.push(f);r.push(row)} return r.filter(a=>a.length&&!(a.length===1&&a[0]===''))}
-function normalize(rows){const trim=v=>String(v??'').replace(/[\\r\\n]+/g,'').trim();
-  const h=rows[0].map(s=>trim(s)), ix=a=>h.indexOf(a);
-  const I={week_start:ix('week_start'),tech:ix('tech'),day:ix('day'),slot:ix('slot'),type:ix('type'),details:ix('details'),notes:ix('notes'),status:ix('status')};
-  if(Object.values(I).some(i=>i<0))return{rows:[]};
-  return{rows:rows.slice(1).map(r=>({week_start:trim(r[I.week_start]),tech:trim(r[I.tech]),day:trim(r[I.day]),slot:parseInt(trim(r[I.slot]||'0'),10)||0,type:trim(r[I.type]||''),details:trim(r[I.details]||''),notes:trim(r[I.notes]||''),status:trim(r[I.status]||'')}))};}
-async function fetchTechs(){try{const r=await fetch('/weekly-grind/techs.json',{cache:'no-store'});if(!r.ok)return[];const j=await r.json();return Array.isArray(j?.techs)?j.techs:(Array.isArray(j)?j:[])}catch{return[]}}
+echo "==> Target webroot: $WEBROOT"
+echo "==> Backup root   : $BACKUP_ROOT"
+echo "==> This run bkdir: $BACKUP_DIR"
 
-function initWeeks(){const start=mondayLocal(new Date());const opts=[];for(let i=12;i>=-12;i--){const d=addDays(start,-7*i);opts.push({v:isoLocal(d),l:d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'2-digit'})})}
-week.innerHTML=opts.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');week.value=isoLocal(start)}
+# === Helpers ==============================================================
 
-/* Pre-auth Basic Auth via hidden iframe (so fetch() can POST) */
-function ensureApiAuth(){return new Promise(res=>{const f=document.createElement('iframe');Object.assign(f.style,{width:0,height:0,border:0,position:'absolute',left:'-9999px'});f.onload=()=>setTimeout(()=>{f.remove();res();},150);f.src='/weekly-grind/api/auth-check?ts='+Date.now();document.body.appendChild(f)})}
-
-/* -------- rendering -------- */
-let DAYS=[], TECHS=[];
-async function load(monISO){
-  hint.textContent='Loading…';
-  const url='/weekly-grind/cantina-schedule-'+monISO+'.csv';
-  const [res, techsJson] = await Promise.all([fetch(url,{cache:'no-store'}), fetchTechs()]);
-  const text = await res.text(); const {rows} = normalize(parseCSV(text));
-  DAYS = dayLabels(monISO);
-  const set = new Set([...(Array.isArray(techsJson)?techsJson:[]), ...rows.map(r=>r.tech)].filter(Boolean));
-  TECHS = Array.from(set).sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
-
-  head.innerHTML = '<th class="sticky-left">Technician</th>'+DAYS.map(d=>`<th>${d.label}</th>`).join('');
-  body.innerHTML='';
-  TECHS.forEach(tech=>{
-    const tr=document.createElement('tr');
-    const left=document.createElement('td'); left.className='sticky-left';
-    left.innerHTML=`<input value="${tech}" style="width:110px"> <button class="del">Del</button>`;
-    tr.appendChild(left);
-    left.querySelector('.del').addEventListener('click',()=>{ if(!confirm('Remove '+tech+'?')) return; tr.remove(); hint.textContent='Unsaved changes'; });
-
-    // build cells from existing rows
-    DAYS.forEach(d=>{
-      const td=document.createElement('td'); const f=(slot)=>rows.find(r=>r.tech===tech && r.day===d.iso && r.slot===slot);
-      const r1=f(1)||{}, r2=f(2)||{};
-      td.innerHTML = `
-        <div class="cell">
-          <div class="row"><select class="s1t">${TYPES.map(o=>`<option${(o===r1.type)?' selected':''}>${o}</option>`).join('')}</select><input class="s1p" placeholder="Project details" value="${(r1.details||'').replace(/"/g,'&quot;')}"></div>
-          <div class="row"><select class="s2t">${TYPES.map(o=>`<option${(o===r2.type)?' selected':''}>${o}</option>`).join('')}</select><input class="s2p" placeholder="Project details" value="${(r2.details||'').replace(/"/g,'&quot;')}"></div>
-          <div class="row notes"><textarea class="notes" placeholder="Notes">${(r1.notes||r2.notes||'').replace(/</g,'&lt;')}</textarea></div>
-        </div>`;
-      tr.appendChild(td);
-    });
-    body.appendChild(tr);
-  });
-
-  // footer row: add + save
-  const tr=document.createElement('tr'); const td=document.createElement('td'); td.colSpan=6;
-  td.innerHTML='<button id="addTech">Add Tech</button> <button id="saveBtn2">Save to Server</button>';
-  tr.appendChild(td); body.appendChild(tr);
-
-  document.querySelector('#addTech').addEventListener('click',()=>{
-    const name=prompt('Technician name:'); if(!name) return;
-    const nv=name.trim(); if(!nv) return;
-    // add a blank row
-    const row=document.createElement('tr');
-    row.innerHTML='<td class="sticky-left"><input value="'+nv+'" style="width:110px"> <button class="del">Del</button></td>'
-      +DAYS.map(()=>'<td><div class="cell">'
-          +'<div class="row"><select class="s1t">'+TYPES.map(o=>'<option>'+o+'</option>').join('')+'</select><input class="s1p" placeholder="Project details"></div>'
-          +'<div class="row"><select class="s2t">'+TYPES.map(o=>'<option>'+o+'</option>').join('')+'</select><input class="s2p" placeholder="Project details"></div>'
-          +'<div class="row notes"><textarea class="notes" placeholder="Notes"></textarea></div>'
-        +'</div></td>').join('');
-    body.insertBefore(row,tr);
-    row.querySelector('.del').addEventListener('click',()=>{ if(!confirm('Remove '+nv+'?')) return; row.remove(); hint.textContent='Unsaved changes'; });
-    hint.textContent='Unsaved changes';
-  });
-
-  document.querySelector('#saveBtn2').addEventListener('click', saveNow);
-  hint.textContent='Loaded';
+backup_file() {
+  local f="$1"
+  [[ -e "$f" ]] || return 0
+  mkdir -p "$BACKUP_DIR"
+  cp -a "$f" "$BACKUP_DIR/"
+  echo "    ? Backed up: $(basename "$f") -> $BACKUP_DIR/"
 }
 
-/* -------- build CSV directly from the DOM -------- */
-function toCSV(rows){
-  const esc=s=>(/[",\n\r]/.test(s)?`"${String(s).replace(/"/g,'""')}"`:String(s));
-  return rows.map(r=>r.map(esc).join(',')).join('\r\n')+'\r\n';
+ensure_in_head() {
+  local file="$1" line="$2"
+  if grep -qF "$line" "$file"; then
+    return
+  fi
+  if grep -qi "</head>" "$file"; then
+    sed -i.bak "/<\/head>/i\\
+$line
+" "$file"
+  else
+    # no <head> tag? prepend
+    sed -i.bak "1i $line" "$file"
+  fi
+  rm -f "${file}.bak"
+  echo "    + Injected into <head>: $line"
 }
-function gatherFromDOM(monISO){
-  const rows=[["week_start","tech","day","slot","type","details","notes","status"]];
-  const techRows = Array.from(body.querySelectorAll('tr')).slice(0,-1); // skip footer row
-  techRows.forEach(tr=>{
-    const tech = tr.querySelector('.sticky-left input')?.value?.trim() || '';
-    if(!tech) return;
-    const tds = tr.querySelectorAll('td'); // [0]=left, 1..5 = days
-    for(let di=1; di<tds.length; di++){
-      const td = tds[di], dayISO = dayByIndex(di-1); // 0..4
-      const s1t = td.querySelector('.s1t')?.value || '';
-      const s1p = td.querySelector('.s1p')?.value || '';
-      const s2t = td.querySelector('.s2t')?.value || '';
-      const s2p = td.querySelector('.s2p')?.value || '';
-      const notes= td.querySelector('.notes')?.value || '';
-      rows.push([monISO,tech,dayISO,'1',s1t,s1p,notes,'']);
-      rows.push([monISO,tech,dayISO,'2',s2t,s2p,notes,'']);
+
+ensure_before_body_end() {
+  local file="$1" line="$2"
+  if grep -qF "$line" "$file"; then
+    return
+  fi
+  if grep -qi "</body>" "$file"; then
+    sed -i.bak "/<\/body>/i\\
+$line
+" "$file"
+  else
+    # no </body>? append
+    printf "\n%s\n" "$line" >> "$file"
+  fi
+  rm -f "${file}.bak"
+  echo "    + Injected before </body>: $line"
+}
+
+# === Write files ===========================================================
+
+# 1) Minimal CSS hotfix (ghost scrub only; layout handled by JS)
+HOTFIX_CSS="$CSS_DIR/hotfix.css"
+if [[ -e "$HOTFIX_CSS" ]]; then backup_file "$HOTFIX_CSS"; fi
+cat > "$HOTFIX_CSS" <<'CSS'
+/* Weekly Grind hotfix: scrub visual ghosts */
+.wg-is-empty::before,.wg-is-empty::after,
+.wg-visual-empty::before,.wg-visual-empty::after { content: none !important; }
+
+.wg-is-empty:not(td):not(th):not(tr):not(table),
+.wg-visual-empty {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+.wg-visual-empty { display: none !important; }
+CSS
+echo "==> Wrote $HOTFIX_CSS"
+
+# 2) View: scale-to-fit (no H-scroll) + nowrap + compact + no inner V-scroll
+VIEW_SPACING_JS="$JS_DIR/view-spacing-fix.js"
+if [[ -e "$VIEW_SPACING_JS" ]]; then backup_file "$VIEW_SPACING_JS"; fi
+cat > "$VIEW_SPACING_JS" <<'JS'
+/* view-spacing-fix.js — Scale-to-fit (no H-scroll) + hard nowrap + vertical compaction + no inner V-scroll */
+(() => {
+  if (window.__VIEW_SPACING_FIX_V10__) return;
+  window.__VIEW_SPACING_FIX_V10__ = true;
+
+  const root =
+    document.getElementById("wg-view") ||
+    document.querySelector(".weekly-grid") ||
+    document.getElementById("grid") ||
+    document.body;
+
+  const imp = (el, prop, val) => { try { el.style.setProperty(prop, val, "important"); } catch {} };
+  const qTable = () => root.querySelector("table");
+
+  const cleanOld = () => {
+    const old = document.getElementById("wg-no-scroll-style");
+    if (old) old.remove();
+    const tbl = qTable();
+    if (!tbl) return;
+    const p = tbl.parentElement;
+    if (p && p.classList && p.classList.contains("wg-scroll")) p.replaceWith(tbl);
+  };
+
+  const ensureScaleWrap = () => {
+    const tbl = qTable();
+    if (!tbl) return {};
+    let host = document.getElementById("wg-fit-host");
+    let wrap = document.getElementById("wg-fit-wrap");
+    if (!host) {
+      host = document.createElement("div");
+      host.id = "wg-fit-host";
+      host.style.position = "relative";
+      host.style.width = "100%";
+      host.style.overflow = "hidden";
+      tbl.parentNode.insertBefore(host, tbl);
     }
-  });
-  return rows;
+    if (!wrap) {
+      wrap = document.createElement("div");
+      wrap.id = "wg-fit-wrap";
+      wrap.style.transformOrigin = "top left";
+      wrap.style.display = "inline-block";
+      host.appendChild(wrap);
+      wrap.appendChild(tbl);
+    }
+    return { host, wrap, tbl };
+  };
 
-  function dayByIndex(i){
-    // read the header cells to get ISO from data-iso attribute
-    const th = head.querySelectorAll('th')[i+1]; // skip "Technician"
-    return th?.dataset?.iso || ''; // will be set in render header
+  const normalizeStyles = ({ tbl }) => {
+    if (!tbl) return;
+    imp(tbl, "table-layout", "auto");
+    imp(tbl, "width", "max-content");
+    imp(tbl, "max-width", "none");
+    imp(tbl, "min-width", "0");
+    imp(tbl, "border-collapse", "separate");
+    imp(tbl, "border-spacing", "8px 3px");
+    tbl.querySelectorAll("th, td").forEach((cell) => {
+      imp(cell, "white-space", "nowrap");
+      imp(cell, "vertical-align", "top");
+      imp(cell, "height", "auto");
+      imp(cell, "min-height", "0");
+      imp(cell, "padding", "2px 6px");
+      imp(cell, "min-width", "0");
+    });
+    tbl.querySelectorAll("th, td, td *").forEach((el) => imp(el, "white-space", "nowrap"));
+    tbl.querySelectorAll("td *").forEach((el) => {
+      const cs = getComputedStyle(el);
+      if (cs.display === "flex") {
+        el.style.alignItems = "flex-start";
+        el.style.flexWrap = "nowrap";
+        const gap = parseFloat(cs.gap) || 0;
+        if (gap > 6) el.style.gap = "4px";
+      }
+      if (el.classList && el.classList.contains("cell")) {
+        el.style.minHeight = "0";
+        el.style.gridTemplateRows = "none";
+        el.style.gridAutoRows = "min-content";
+        el.style.alignContent = "start";
+        const g = parseFloat(cs.gap) || 0;
+        if (g > 4) el.style.gap = "2px";
+      }
+      if ((parseFloat(cs.minHeight) || 0) > 0) el.style.minHeight = "0";
+      if ((parseFloat(cs.paddingTop) || 0) > 8) el.style.paddingTop = "2px";
+      if ((parseFloat(cs.paddingBottom) || 0) > 8) el.style.paddingBottom = "2px";
+      if ((parseFloat(cs.marginTop) || 0) > 8) el.style.marginTop = "2px";
+      if ((parseFloat(cs.marginBottom) || 0) > 8) el.style.marginBottom = "2px";
+    });
+  };
+
+  const relaxWrappers = ({ host }) => {
+    let el = host;
+    while (el && el !== document.body) {
+      imp(el, "max-height", "none");
+      imp(el, "overflow-y", "hidden");
+      el = el.parentElement;
+      if (!el || el === root) break;
+    }
+    imp(root, "overflow-y", "visible");
+  };
+
+  const applyScale = ({ host, wrap, tbl }, forcedScale = null) => {
+    if (!host || !wrap || !tbl) return;
+    wrap.style.transform = "scale(1)";
+    void wrap.offsetWidth;
+    const natW = tbl.scrollWidth;
+    const avail = host.clientWidth;
+    const s = forcedScale != null ? forcedScale : Math.min(1, avail / Math.max(1, natW));
+    wrap.style.transform = `scale(${s})`;
+    const rect = wrap.getBoundingClientRect();
+    host.style.height = `${Math.ceil(rect.height) + 2}px`;
+    host.style.overflowX = "hidden";
+    host.style.overflowY = "hidden";
+  };
+
+  const ensureToggle = (scope) => {
+    if (document.getElementById("wg-width-toggle")) return;
+    const b = document.createElement("button");
+    b.id = "wg-width-toggle";
+    b.textContent = "Mode: Fit";
+    Object.assign(b.style, {
+      position: "fixed", right: "12px", bottom: "12px",
+      zIndex: "2147483647", padding: "6px 10px",
+      borderRadius: "999px", font: "600 12px/1 system-ui, sans-serif",
+      background: "#0b1324", color: "#cde1ff", border: "1px solid #26406f",
+      boxShadow: "0 2px 10px rgba(0,0,0,.35)", cursor: "pointer"
+    });
+    b.addEventListener("mouseenter", () => b.style.background = "#0f1a33");
+    b.addEventListener("mouseleave", () => b.style.background = "#0b1324");
+    let fitMode = true;
+    b.addEventListener("click", () => {
+      fitMode = !fitMode;
+      b.textContent = "Mode: " + (fitMode ? "Fit" : "100%");
+      if (fitMode) {
+        applyScale(scope, null);
+        relaxWrappers(scope);
+      } else {
+        scope.wrap.style.transform = "scale(1)";
+        const rect = scope.wrap.getBoundingClientRect();
+        scope.host.style.height = `${Math.ceil(rect.height) + 2}px`;
+        scope.host.style.overflowX = "auto";
+        scope.host.style.overflowY = "hidden";
+      }
+    });
+    document.body.appendChild(b);
+  };
+
+  const runAll = () => {
+    cleanOld();
+    const scope = ensureScaleWrap();
+    if (!scope.tbl) return;
+    normalizeStyles(scope);
+    relaxWrappers(scope);
+    ensureToggle(scope);
+    applyScale(scope, null);
+  };
+
+  const once = (() => {
+    let done = false;
+    return () => { if (!done) { done = true; runAll(); } };
+  })();
+
+  window.addEventListener("csv:rendered", once, { once: true });
+  window.addEventListener("csv:loaded",   once, { once: true });
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => setTimeout(once, 250));
+  } else {
+    setTimeout(once, 250);
   }
-}
 
-/* -------- save / download -------- */
-async function postSave(monISO,csv){
-  return fetch('/weekly-grind/api/save',{
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ mondayISO: monISO, csv })
-  });
-}
-async function saveNow(){
-  try{
-    const monISO = week.value;
-    hint.textContent='Saving…'; saveBtn.disabled=true;
-    const csv = toCSV(gatherFromDOM(monISO));
-    let res = await postSave(monISO,csv);
-    if(res.status===401){ await ensureApiAuth(); res = await postSave(monISO,csv); }
-    if(!res.ok){ const t=await res.text(); throw new Error(`HTTP ${res.status}: ${t}`); }
-    hint.textContent='Saved';
-  }catch(e){ console.error(e); hint.textContent='Save failed'; alert('Save failed: '+e.message); }
-  finally{ saveBtn.disabled=false; }
-}
-dlBtn.addEventListener('click',()=>{
-  const monISO=week.value; const csv=toCSV(gatherFromDOM(monISO));
-  const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download=`cantina-schedule-${monISO}.csv`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-});
+  let raf = null;
+  const refit = () => {
+    if (raf) return;
+    raf = requestAnimationFrame(() => { raf = null; runAll(); });
+  };
+  window.addEventListener("resize", refit);
+  const mo = new MutationObserver(refit);
+  mo.observe(root, { childList: true, subtree: true, characterData: true });
+})();
+JS
+echo "==> Wrote $VIEW_SPACING_JS"
 
-/* -------- boot -------- */
-function bootWeeks(){const start=mondayLocal(new Date());const opts=[];for(let i=12;i>=-12;i--){const d=addDays(start,-7*i);opts.push({v:isoLocal(d),l:d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'2-digit'})})}
-week.innerHTML=opts.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');week.value=isoLocal(start)}
-bootWeeks();
-week.addEventListener('change', e=>load(e.target.value));
-ensureApiAuth().then(()=>load(week.value));
-/* add data-iso to headers after each render */
-const origHeadAppend = head.appendChild.bind(head);
-head.appendChild = function(node){ const r = origHeadAppend(node); setTimeout(()=>{ const days = dayLabels(week.value); const ths = head.querySelectorAll('th'); for(let i=0;i<days.length;i++){ const th=ths[i+1]; if(th) th.dataset.iso = days[i].iso; } }, 0); return r; };
-</script>
-</body></html>
-HTML
+# 3) Admin: Unsaved badge + Last saved timestamp (no layout changes)
+ADMIN_IND_JS="$JS_DIR/admin-unsaved-indicator.js"
+if [[ -e "$ADMIN_IND_JS" ]]; then backup_file "$ADMIN_IND_JS"; fi
+cat > "$ADMIN_IND_JS" <<'JS'
+/* admin-unsaved-indicator.js — Unsaved badge + Last saved timestamp (Admin only) */
+(() => {
+  if (window.__ADMIN_UNSAVED_INDICATOR__) return;
+  window.__ADMIN_UNSAVED_INDICATOR__ = true;
 
-echo "Patched Admin. Backup: $ADMIN.bak.$ts"
-SH
+  const root =
+    document.getElementById("wg-admin") ||
+    document.querySelector(".weekly-grid-admin") ||
+    document.getElementById("grid-admin") ||
+    document.body;
 
-bash ~/tiny-web/patch-admin-save-from-dom.sh
+  const injectStyles = () => {
+    if (document.getElementById("wg-unsaved-style")) return;
+    const css = `
+      #wg-unsaved-wrap {
+        position: fixed; right: 14px; top: 70px; z-index: 2147483647;
+        display: flex; gap: 8px; align-items: center;
+        font: 600 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        color: #cde1ff;
+      }
+      #wg-unsaved-pill {
+        display: none;
+        padding: 6px 10px; border-radius: 999px;
+        background: #2a0f16; color: #ffd0d6; border: 1px solid #531a24;
+        box-shadow: 0 2px 10px rgba(0,0,0,.35);
+      }
+      #wg-saved-pill {
+        padding: 6px 10px; border-radius: 999px;
+        background: #0b1324; color: #cde1ff; border: 1px solid #26406f;
+        box-shadow: 0 2px 10px rgba(0,0,0,.25);
+      }
+      #wg-saved-pill .dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        display: inline-block; margin-right: 6px; background: #3cde7c;
+      }
+      #wg-unsaved-pill .dot {
+        width: 8px; height: 8px; border-radius: 50%;
+        display: inline-block; margin-right: 6px; background: #ff6b81;
+      }
+      @media (max-width: 720px) {
+        #wg-unsaved-wrap { top: 56px; right: 10px; font-size: 11px; }
+      }
+    `;
+    const s = document.createElement("style");
+    s.id = "wg-unsaved-style";
+    s.textContent = css;
+    document.head.appendChild(s);
+  };
+
+  const ensureUI = () => {
+    if (document.getElementById("wg-unsaved-wrap")) return;
+    const wrap = document.createElement("div");
+    wrap.id = "wg-unsaved-wrap";
+
+    const unsaved = document.createElement("div");
+    unsaved.id = "wg-unsaved-pill";
+    unsaved.innerHTML = `<span class="dot"></span>Unsaved changes`;
+
+    const saved = document.createElement("div");
+    saved.id = "wg-saved-pill";
+    saved.innerHTML = `<span class="dot"></span><span id="wg-saved-text">Saved</span>`;
+
+    wrap.appendChild(unsaved);
+    wrap.appendChild(saved);
+    document.body.appendChild(wrap);
+  };
+
+  injectStyles();
+  ensureUI();
+
+  const $ = (sel) => document.querySelector(sel);
+  const unsavedPill = $("#wg-unsaved-pill");
+  const savedPill   = $("#wg-saved-pill");
+  const savedText   = $("#wg-saved-text");
+
+  let dirty = false;
+  let lastSaved = null;
+
+  const fmtTime = (d) =>
+    d.toLocaleString(undefined, { hour: "numeric", minute: "2-digit", second: "2-digit" });
+
+  const render = () => {
+    if (dirty) {
+      unsavedPill.style.display = "inline-block";
+      savedPill.style.opacity = "0.7";
+      savedText.textContent = lastSaved ? `Last saved ${fmtTime(lastSaved)}` : "No saves yet";
+    } else {
+      unsavedPill.style.display = "none";
+      savedPill.style.opacity = "1";
+      savedText.textContent = lastSaved ? `Saved • ${fmtTime(lastSaved)}` : "Saved";
+    }
+  };
+
+  window.wgAdminMarkDirty = () => { dirty = true; render(); };
+  window.wgAdminMarkSaved = (when = new Date()) => { dirty = false; lastSaved = when; render(); };
+
+  const editSelector = 'input, select, textarea, [contenteditable=""], [contenteditable="true"]';
+  root.addEventListener("input",  (e) => { if (e.target.closest(editSelector)) { dirty = true; render(); } }, true);
+  root.addEventListener("change", (e) => { if (e.target.closest(editSelector)) { dirty = true; render(); } }, true);
+
+  window.addEventListener("csv:loaded",   () => { dirty = false; render(); });
+  window.addEventListener("csv:rendered", () => { /* no-op */ });
+  window.addEventListener("csv:saved",    () => { dirty = false; lastSaved = new Date(); render(); });
+
+  render();
+})();
+JS
+echo "==> Wrote $ADMIN_IND_JS"
+
+# === Patch HTML pages ======================================================
+
+echo "==> Scanning for Admin and View HTML"
+mapfile -t ADMIN_PAGES < <(find "$WEBROOT" -maxdepth 1 -type f -iname "*admin*.html" | sort)
+mapfile -t VIEW_PAGES  < <(find "$WEBROOT" -maxdepth 1 -type f -iname "*view*.html"  | sort)
+echo "    ? Admin pages: ${#ADMIN_PAGES[@]}"
+echo "    ? View pages:  ${#VIEW_PAGES[@]}"
+
+# Common includes (cache-busted once)
+CSS_LINK='<link rel="stylesheet" href="/weekly-grind/css/hotfix.css?v=1">'
+VIEW_FIX='<script defer src="/weekly-grind/js/view-spacing-fix.js?v=10"></script>'
+ADMIN_UNSAVED='<script defer src="/weekly-grind/js/admin-unsaved-indicator.js?v=1"></script>'
+
+# Patch Admin pages
+for f in "${ADMIN_PAGES[@]}"; do
+  echo "==> Patching Admin page: $(basename "$f")"
+  backup_file "$f"
+  ensure_in_head "$f" "$CSS_LINK"
+  ensure_before_body_end "$f" "$ADMIN_UNSAVED"
+done
+
+# Patch View pages
+for f in "${VIEW_PAGES[@]}"; do
+  echo "==> Patching View page: $(basename "$f")"
+  backup_file "$f"
+  ensure_in_head "$f" "$CSS_LINK"
+  ensure_before_body_end "$f" "$VIEW_FIX"
+done
+
+echo "==> All done."
+
+echo
+echo "JS dir   : $JS_DIR"
+echo "CSS dir  : $CSS_DIR"
+if [[ -d "$BACKUP_DIR" ]]; then
+  echo "Backups  : $BACKUP_DIR"
+fi
+
+cat <<'TIP'
+
+After saving on Admin, signal success so the badge clears:
+  window.dispatchEvent(new Event('csv:saved'));
+  // or:
+  window.wgAdminMarkSaved?.();
+
+TIP

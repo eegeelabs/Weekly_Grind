@@ -1,212 +1,493 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Weekly Grind — Admin</title>
-<style>
-:root{
-  --tech-col:150px; --gap:4px; --pad:4px; --font:14px;
-  --soft:rgba(255,255,255,.08); --text:#e6e9ff; --muted:#8892b0;
-  --bg:#0f1220; --card:#171a2b;
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font:var(--font)/1.4 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
-header{position:sticky;top:0;z-index:5;background:rgba(15,18,32,.9);border-bottom:1px solid var(--soft)}
-.wrap{max-width:1400px;margin:0 auto;padding:10px 12px}
-h1{margin:0;font-size:18px}
-select,button,input,textarea{background:#0d1224;border:1px solid var(--soft);color:var(--text);border-radius:8px;padding:2px 6px}
-button{cursor:pointer}
-main{padding:12px}
-.table-wrap{border:1px solid var(--soft);border-radius:14px;background:var(--card);overflow:hidden}
-table{width:100%;table-layout:fixed;border-collapse:separate;border-spacing:0}
-thead th{position:sticky;top:0;background:#1a1e33;color:#cbd5ff;border-bottom:1px solid var(--soft);font-weight:600;text-align:center;white-space:nowrap}
-th,td{padding:6px;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
-th:last-child,td:last-child{border-right:0}
-.sticky-left{position:sticky;left:0;background:#1a1e33;color:var(--text);font-weight:600;z-index:3}
-tbody .sticky-left{background:#151a2c;z-index:2}
-.cell{display:grid;grid-template-rows:auto auto auto;gap:var(--gap);min-height:110px}
-.row{display:grid;grid-template-columns:minmax(56px,max-content) 1fr;gap:var(--gap);align-items:center}
-.row select{width:auto;min-width:4ch;height:26px}
-input.s1p,input.s2p,textarea.text{padding:var(--pad)}
-textarea.text{resize:vertical;min-height:28px}
-.notes{grid-column:1 / -1}
-@media (max-width:1280px){:root{--tech-col:130px;--font:13px}th,td{padding:4px}}
-</style>
-</head><body>
-<header>
-  <div class="wrap" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-    <h1>Configuration Cantina — Admin</h1><div style="flex:1"></div>
-    <label>Week: <select id="week"></select></label>
-    <button id="save">Save to Server</button>
-    <button id="dl">Download CSV</button>
-    <a href="/weekly-grind/" style="margin-left:8px">View</a>
-    <span id="hint" style="margin-left:8px;color:var(--muted)">Ready</span>
-  </div>
-</header>
-<main class="wrap">
-  <div class="table-wrap">
-    <table>
-      <colgroup>
-        <col style="width:var(--tech-col)">
-        <col span="5" style="width:calc((100% - var(--tech-col))/5)">
-      </colgroup>
-      <thead><tr id="head"></tr></thead>
-      <tbody id="body"></tbody>
-    </table>
-  </div>
-</main>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Weekly Grind Admin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-<script>
-const TYPES=["","IMG","CFG","OnB","R/R","ADUM"];
-const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
-const head=$("#head"), body=$("#body"), week=$("#week"), hint=$("#hint"), saveBtn=$("#save"), dlBtn=$("#dl");
-
-const isoLocal=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x;}
-function mondayLocal(d){const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());const w=x.getDay();x.setDate(x.getDate()+(w===0?-6:1-w));return x;}
-function dayLabels(monISO){const [Y,M,D]=monISO.split('-').map(Number);const base=new Date(Y,M-1,D);
-  return [0,1,2,3,4].map(n=>{const x=addDays(base,n);return{iso:isoLocal(x),label:x.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'2-digit'})};});}
-function parseCSV(t){const r=[];let i=0,f='',row=[],q=false;while(i<t.length){const c=t[i];
-  if(q){if(c=='"'&&t[i+1]=='"'){f+='"';i+=2;continue}if(c=='"'){q=false;i++;continue}f+=c;i++;continue}
-  if(c=='"'){q=true;i++;continue} if(c===','){row.push(f);f='';i++;continue}
-  if(c==='\\n'||c==='\\r'){if(f!==''||row.length){row.push(f);r.push(row)}row=[];f='';if(c==='\\r'&&t[i+1]==='\\n')i++;i++;continue}
-  f+=c;i++} if(f!==''||row.length){row.push(f);r.push(row)} return r.filter(a=>a.length&&!(a.length===1&&a[0]===''))}
-function normalize(rows){const trim=v=>String(v??'').replace(/[\\r\\n]+/g,'').trim();
-  const h=rows[0].map(s=>trim(s)), ix=a=>h.indexOf(a);
-  const I={week_start:ix('week_start'),tech:ix('tech'),day:ix('day'),slot:ix('slot'),type:ix('type'),details:ix('details'),notes:ix('notes'),status:ix('status')};
-  if(Object.values(I).some(i=>i<0))return{rows:[]};
-  return{rows:rows.slice(1).map(r=>({week_start:trim(r[I.week_start]),tech:trim(r[I.tech]),day:trim(r[I.day]),slot:parseInt(trim(r[I.slot]||'0'),10)||0,type:trim(r[I.type]||''),details:trim(r[I.details]||''),notes:trim(r[I.notes]||''),status:trim(r[I.status]||'')}))};}
-async function fetchTechs(){try{const r=await fetch('/weekly-grind/techs.json',{cache:'no-store'});if(!r.ok)return[];const j=await r.json();return Array.isArray(j?.techs)?j.techs:(Array.isArray(j)?j:[])}catch{return[]}}
-
-function initWeeks(){const start=mondayLocal(new Date());const opts=[];for(let i=12;i>=-12;i--){const d=addDays(start,-7*i);opts.push({v:isoLocal(d),l:d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'2-digit'})})}
-week.innerHTML=opts.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');week.value=isoLocal(start)}
-
-/* Pre-auth Basic Auth via hidden iframe (so fetch() can POST) */
-function ensureApiAuth(){return new Promise(res=>{const f=document.createElement('iframe');Object.assign(f.style,{width:0,height:0,border:0,position:'absolute',left:'-9999px'});f.onload=()=>setTimeout(()=>{f.remove();res();},150);f.src='/weekly-grind/api/auth-check?ts='+Date.now();document.body.appendChild(f)})}
-
-/* -------- rendering -------- */
-let DAYS=[], TECHS=[];
-async function load(monISO){
-  hint.textContent='Loading…';
-  const url='/weekly-grind/cantina-schedule-'+monISO+'.csv';
-  const [res, techsJson] = await Promise.all([fetch(url,{cache:'no-store'}), fetchTechs()]);
-  const text = await res.text(); const {rows} = normalize(parseCSV(text));
-  DAYS = dayLabels(monISO);
-  const set = new Set([...(Array.isArray(techsJson)?techsJson:[]), ...rows.map(r=>r.tech)].filter(Boolean));
-  TECHS = Array.from(set).sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
-
-  head.innerHTML = '<th class="sticky-left">Technician</th>'+DAYS.map(d=>`<th>${d.label}</th>`).join('');
-  body.innerHTML='';
-  TECHS.forEach(tech=>{
-    const tr=document.createElement('tr');
-    const left=document.createElement('td'); left.className='sticky-left';
-    left.innerHTML=`<input value="${tech}" style="width:110px"> <button class="del">Del</button>`;
-    tr.appendChild(left);
-    left.querySelector('.del').addEventListener('click',()=>{ if(!confirm('Remove '+tech+'?')) return; tr.remove(); hint.textContent='Unsaved changes'; });
-
-    // build cells from existing rows
-    DAYS.forEach(d=>{
-      const td=document.createElement('td'); const f=(slot)=>rows.find(r=>r.tech===tech && r.day===d.iso && r.slot===slot);
-      const r1=f(1)||{}, r2=f(2)||{};
-      td.innerHTML = `
-        <div class="cell">
-          <div class="row"><select class="s1t">${TYPES.map(o=>`<option${(o===r1.type)?' selected':''}>${o}</option>`).join('')}</select><input class="s1p" placeholder="Project details" value="${(r1.details||'').replace(/"/g,'&quot;')}"></div>
-          <div class="row"><select class="s2t">${TYPES.map(o=>`<option${(o===r2.type)?' selected':''}>${o}</option>`).join('')}</select><input class="s2p" placeholder="Project details" value="${(r2.details||'').replace(/"/g,'&quot;')}"></div>
-          <div class="row notes"><textarea class="notes" placeholder="Notes">${(r1.notes||r2.notes||'').replace(/</g,'&lt;')}</textarea></div>
-        </div>`;
-      tr.appendChild(td);
-    });
-    body.appendChild(tr);
-  });
-
-  // footer row: add + save
-  const tr=document.createElement('tr'); const td=document.createElement('td'); td.colSpan=6;
-  td.innerHTML='<button id="addTech">Add Tech</button> <button id="saveBtn2">Save to Server</button>';
-  tr.appendChild(td); body.appendChild(tr);
-
-  document.querySelector('#addTech').addEventListener('click',()=>{
-    const name=prompt('Technician name:'); if(!name) return;
-    const nv=name.trim(); if(!nv) return;
-    // add a blank row
-    const row=document.createElement('tr');
-    row.innerHTML='<td class="sticky-left"><input value="'+nv+'" style="width:110px"> <button class="del">Del</button></td>'
-      +DAYS.map(()=>'<td><div class="cell">'
-          +'<div class="row"><select class="s1t">'+TYPES.map(o=>'<option>'+o+'</option>').join('')+'</select><input class="s1p" placeholder="Project details"></div>'
-          +'<div class="row"><select class="s2t">'+TYPES.map(o=>'<option>'+o+'</option>').join('')+'</select><input class="s2p" placeholder="Project details"></div>'
-          +'<div class="row notes"><textarea class="notes" placeholder="Notes"></textarea></div>'
-        +'</div></td>').join('');
-    body.insertBefore(row,tr);
-    row.querySelector('.del').addEventListener('click',()=>{ if(!confirm('Remove '+nv+'?')) return; row.remove(); hint.textContent='Unsaved changes'; });
-    hint.textContent='Unsaved changes';
-  });
-
-  document.querySelector('#saveBtn2').addEventListener('click', saveNow);
-  hint.textContent='Loaded';
-}
-
-/* -------- build CSV directly from the DOM -------- */
-function toCSV(rows){
-  const esc=s=>(/[",\n\r]/.test(s)?`"${String(s).replace(/"/g,'""')}"`:String(s));
-  return rows.map(r=>r.map(esc).join(',')).join('\r\n')+'\r\n';
-}
-function gatherFromDOM(monISO){
-  const rows=[["week_start","tech","day","slot","type","details","notes","status"]];
-  const techRows = Array.from(body.querySelectorAll('tr')).slice(0,-1); // skip footer row
-  techRows.forEach(tr=>{
-    const tech = tr.querySelector('.sticky-left input')?.value?.trim() || '';
-    if(!tech) return;
-    const tds = tr.querySelectorAll('td'); // [0]=left, 1..5 = days
-    for(let di=1; di<tds.length; di++){
-      const td = tds[di], dayISO = dayByIndex(di-1); // 0..4
-      const s1t = td.querySelector('.s1t')?.value || '';
-      const s1p = td.querySelector('.s1p')?.value || '';
-      const s2t = td.querySelector('.s2t')?.value || '';
-      const s2p = td.querySelector('.s2p')?.value || '';
-      const notes= td.querySelector('.notes')?.value || '';
-      rows.push([monISO,tech,dayISO,'1',s1t,s1p,notes,'']);
-      rows.push([monISO,tech,dayISO,'2',s2t,s2p,notes,'']);
+  <style>
+    :root {
+      --bg: #0f1520;
+      --panel: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --line: #1f2937;
+      --ok: #10b981;
+      --accent: #4f46e5;
     }
-  });
-  return rows;
 
-  function dayByIndex(i){
-    // read the header cells to get ISO from data-iso attribute
-    const th = head.querySelectorAll('th')[i+1]; // skip "Technician"
-    return th?.dataset?.iso || ''; // will be set in render header
-  }
-}
+    html, body { height:100%; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      margin:0;
+      font:14px system-ui, -apple-system, Segoe UI, Arial;
+    }
 
-/* -------- save / download -------- */
-async function postSave(monISO,csv){
-  return fetch('/weekly-grind/api/save',{
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ mondayISO: monISO, csv })
-  });
-}
-async function saveNow(){
-  try{
-    const monISO = week.value;
-    hint.textContent='Saving…'; saveBtn.disabled=true;
-    const csv = toCSV(gatherFromDOM(monISO));
-    let res = await postSave(monISO,csv);
-    if(res.status===401){ await ensureApiAuth(); res = await postSave(monISO,csv); }
-    if(!res.ok){ const t=await res.text(); throw new Error(`HTTP ${res.status}: ${t}`); }
-    hint.textContent='Saved';
-  }catch(e){ console.error(e); hint.textContent='Save failed'; alert('Save failed: '+e.message); }
-  finally{ saveBtn.disabled=false; }
-}
-dlBtn.addEventListener('click',()=>{
-  const monISO=week.value; const csv=toCSV(gatherFromDOM(monISO));
-  const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download=`cantina-schedule-${monISO}.csv`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
-});
+    /* Header */
+    header {
+      background: var(--panel);
+      padding:10px;
+      border-bottom:1px solid var(--line);
+      position:sticky;
+      top:0;
+      z-index:10;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
 
-/* -------- boot -------- */
-function bootWeeks(){const start=mondayLocal(new Date());const opts=[];for(let i=12;i>=-12;i--){const d=addDays(start,-7*i);opts.push({v:isoLocal(d),l:d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'2-digit'})})}
-week.innerHTML=opts.map(o=>`<option value="${o.v}">${o.l}</option>`).join('');week.value=isoLocal(start)}
-bootWeeks();
-week.addEventListener('change', e=>load(e.target.value));
-ensureApiAuth().then(()=>load(week.value));
-/* add data-iso to headers after each render */
-const origHeadAppend = head.appendChild.bind(head);
-head.appendChild = function(node){ const r = origHeadAppend(node); setTimeout(()=>{ const days = dayLabels(week.value); const ths = head.querySelectorAll('th'); for(let i=0;i<days.length;i++){ const th=ths[i+1]; if(th) th.dataset.iso = days[i].iso; } }, 0); return r; };
-</script>
-</body></html>
+    header .topline {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    header small.note {
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    #hint { color:var(--muted); }
+    #hint.saved {
+      color:var(--ok);
+      font-weight:600;
+    }
+
+    button {
+      background:#1b2537;
+      border:1px solid #2a3a53;
+      color:var(--text);
+      padding:6px 10px;
+      border-radius:6px;
+      cursor:pointer;
+    }
+
+    button.del {
+      background:#3a1010;
+      border-color:#5c1a1a;
+    }
+
+    /* Admin nav */
+    .wg-admin-nav {
+      margin-top: 0.4rem;
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+    }
+
+    .wg-nav-link {
+      font-size: 0.8rem;
+      padding: 0.22rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .wg-nav-link:hover {
+      border-color: var(--accent);
+      background: var(--panel);
+    }
+
+    /* Table */
+    table {
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+    }
+
+    th, td {
+      border:1px solid var(--line);
+      padding:0;
+      vertical-align:top;
+    }
+
+    th {
+      background:#0b1322;
+      position:sticky;
+      top:78px; /* adjust if header height changes */
+      z-index:5;
+      height:40px;
+      padding:0;
+      text-align:left;
+    }
+
+    th .dayhead {
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:8px;
+      padding:0 10px;
+      height:40px;
+    }
+
+    th .dayhead .dmd {
+      color: var(--muted);
+      font-size:11px;
+    }
+
+    /* Technician column */
+    th.sticky-left,
+    td.sticky-left {
+      position:sticky;
+      left:0;
+      background:#0b1322;
+      z-index:6;
+      width:150px;
+      min-width:150px;
+      max-width:150px;
+      padding:6px;
+    }
+
+    td.sticky-left input {
+      width:100%;
+      background:#0d1726;
+      border:1px solid #2c3a50;
+      color:var(--text);
+      border-radius:6px;
+      padding:4px 6px;
+      box-sizing:border-box;
+    }
+
+    /* Cell layout */
+    .cell {
+      padding:6px;
+      display:grid;
+      gap:6px;
+    }
+
+    .row {
+      display:grid;
+      grid-template-columns: 85px 1fr 22px;
+      gap:6px;
+      align-items:center;
+    }
+
+    .row.notes { grid-template-columns: 1fr; }
+
+    select,
+    input[type="text"],
+    textarea {
+      background:#0d1726;
+      border:1px solid #2c3a50;
+      color:var(--text);
+      border-radius:6px;
+      box-sizing:border-box;
+    }
+
+    select {
+      height:32px;
+      padding:0 20px 0 6px;
+      min-width:70px;
+      width:auto;
+    }
+
+    input[type="text"] {
+      height:32px;
+      padding:0 6px;
+    }
+
+    label.done-flag {
+      display:flex;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    label.done-flag input {
+      margin:0;
+      transform: translateY(1px);
+    }
+
+    textarea.notes {
+      width:100%;
+      min-height:55px;
+      resize:vertical;
+      padding:6px;
+    }
+
+    tfoot td { padding:8px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topline">
+      <strong>Weekly Grind Admin</strong>
+      <span>Week (Monday): <input id="week" type="date"></span>
+      <button id="saveBtn">Save to Server</button>
+      <span id="hint">Idle</span>
+      <small id="lastSaved"></small>
+    </div>
+
+    <nav class="wg-admin-nav">
+      <a href="/weekly-grind/view" class="wg-nav-link">Schedule View</a>
+      <a href="/weekly-grind/projects" class="wg-nav-link">Projects</a>
+      <a href="/weekly-grind/users" class="wg-nav-link">Users &amp; Roles</a>
+      <a href="/weekly-grind/initiatives" class="wg-nav-link">Initiatives</a>
+    </nav>
+
+    <small class="note">
+      To mark completion, check the box to the right of the task.
+    </small>
+  </header>
+
+  <table>
+    <thead><tr id="head"></tr></thead>
+    <tbody id="body"></tbody>
+  </table>
+
+  <script>
+    const head=document.getElementById('head');
+    const body=document.getElementById('body');
+    const week=document.getElementById('week');
+    const saveBtn=document.getElementById('saveBtn');
+    const hint=document.getElementById('hint');
+    const lastSaved=document.getElementById('lastSaved');
+    const TYPES=['','IMG','Bypass','Testing','Deploy','PC-O','R/R','Other'];
+
+    const pad2=n=>String(n).padStart(2,'0');
+    const toISO=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+
+    function mondayOf(iso){
+      const d=new Date(`${iso}T00:00:00`);
+      const w=d.getDay();
+      d.setDate(d.getDate()+(w===0?-6:1-w));
+      return toISO(d);
+    }
+
+    function csvEscape(v){
+      if(v==null)v='';
+      const s=String(v);
+      return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;
+    }
+
+    function toCSV(rows){
+      return rows.map(r=>r.map(csvEscape).join(',')).join('\n')+'\n';
+    }
+
+    function parseCSV(text){
+      let rows=[],i=0,field='',inQ=false,row=[];
+      const push=()=>{row.push(field);field='';};
+      const end=()=>{rows.push(row);row=[];};
+      while(i<text.length){
+        const ch=text[i++];
+        if(inQ){
+          if(ch=='"'){
+            if(text[i]=='"'){field+='"';i++;}
+            else inQ=false;
+          }else field+=ch;
+        }else{
+          if(ch=='"')inQ=true;
+          else if(ch==',')push();
+          else if(ch=='\n'){push();end();}
+          else if(ch!='\r')field+=ch;
+        }
+      }
+      if(field.length||row.length){push();end();}
+      return rows;
+    }
+
+    function normalize(rows){
+      const head=rows[0]||[];
+      const idx={};
+      ['week_start','tech','day','slot','type','details','notes','status'].forEach(
+        k=>idx[k]=head.indexOf(k)
+      );
+      const out=[];
+      for(let i=1;i<rows.length;i++){
+        const r=rows[i];
+        if(!r||!r.length)continue;
+        out.push({
+          week_start:r[idx.week_start]||'',
+          tech:r[idx.tech]||'',
+          day:r[idx.day]||'',
+          slot:r[idx.slot]||'',
+          type:r[idx.type]||'',
+          details:r[idx.details]||'',
+          notes:r[idx.notes]||'',
+          status:r[idx.status]||''
+        });
+      }
+      return out;
+    }
+
+    async function fetchTechs(){
+      try{
+        const r=await fetch('/weekly-grind/techs.json',{cache:'no-store'});
+        const j=await r.json();
+        return Array.isArray(j.techs)?j.techs:[];
+      }catch{
+        return[];
+      }
+    }
+
+    function dayLabels(mon){
+      const d=new Date(`${mon}T00:00:00`);
+      const names=['Mon','Tue','Wed','Thu','Fri'];
+      const out=[];
+      for(let i=0;i<5;i++){
+        const dd=new Date(d);
+        dd.setDate(d.getDate()+i);
+        out.push({iso:toISO(dd),label:names[i]});
+      }
+      return out;
+    }
+
+    let DAYS=[],TECHS=[];
+
+    function renderHeader(){
+      const parts = ['<th class="sticky-left">Technician</th>'];
+      DAYS.forEach(d=>{
+        const md = d.iso.slice(5).replace('-','/');
+        parts.push(
+          `<th data-iso="${d.iso}"><div class="dayhead"><span class="dlabel">${d.label}</span><span class="dmd">${md}</span></div></th>`
+        );
+      });
+      head.innerHTML = parts.join('');
+    }
+
+    function renderRow(tech,rows){
+      const tr=document.createElement('tr');
+      tr.innerHTML=
+        `<td class="sticky-left"><input value="${tech}"> <button class="del">Del</button></td>`;
+      tr.querySelector('.del').onclick=()=>{
+        if(confirm('Remove technician row?'))tr.remove();
+      };
+
+      DAYS.forEach(d=>{
+        const r1=rows.find(r=>r.tech===tech&&r.day===d.iso&&r.slot=='1')||{};
+        const r2=rows.find(r=>r.tech===tech&&r.day===d.iso&&r.slot=='2')||{};
+        const s1=/^(y|1|true)$/i.test(r1.status||'')?'checked':'';
+        const s2=/^(y|1|true)$/i.test(r2.status||'')?'checked':'';
+
+        const td=document.createElement('td');
+        td.innerHTML=
+          `<div class="cell">
+             <div class="row">
+               <select class="s1t">
+                 ${TYPES.map(o=>`<option${o===r1.type?' selected':''}>${o}</option>`).join('')}
+               </select>
+               <input class="s1p" type="text" value="${(r1.details||'').replace(/"/g,'&quot;')}">
+               <label class="done-flag"><input type="checkbox" class="s1done" ${s1}></label>
+             </div>
+             <div class="row">
+               <select class="s2t">
+                 ${TYPES.map(o=>`<option${o===r2.type?' selected':''}>${o}</option>`).join('')}
+               </select>
+               <input class="s2p" type="text" value="${(r2.details||'').replace(/"/g,'&quot;')}">
+               <label class="done-flag"><input type="checkbox" class="s2done" ${s2}></label>
+             </div>
+             <div class="row notes">
+               <textarea class="notes">${(r1.notes||r2.notes||'')}</textarea>
+             </div>
+           </div>`;
+        tr.appendChild(td);
+      });
+
+      body.appendChild(tr);
+    }
+
+    async function load(mon){
+      hint.textContent='Loading…';
+      const resp=await fetch(`/weekly-grind/cantina-schedule-${mon}.csv`,{cache:'no-store'});
+      const text=await resp.text();
+      const rows=normalize(parseCSV(text));
+
+      TECHS=(await fetchTechs()).slice();
+      rows.forEach(r=>{
+        if(r.tech&&!TECHS.includes(r.tech))TECHS.push(r.tech);
+      });
+      TECHS.sort((a,b)=>a.localeCompare(b,undefined,{sensitivity:'base'}));
+
+      DAYS=dayLabels(mon);
+      renderHeader();
+      body.innerHTML='';
+
+      TECHS.forEach(t=>renderRow(t,rows));
+
+      const fr=document.createElement('tr');
+      const fd=document.createElement('td');
+      fd.colSpan=6;
+      fd.innerHTML='<button id="addTech">Add Tech</button> <button id="saveBtn2">Save to Server</button>';
+      fr.appendChild(fd);
+      body.appendChild(fr);
+
+      document.getElementById('addTech').onclick=()=>{
+        const name=(prompt('Technician name:')||'').trim();
+        if(!name)return;
+        if(!TECHS.includes(name))TECHS.push(name);
+        renderRow(name,[]);
+      };
+
+      document.getElementById('saveBtn2').onclick=saveNow;
+      hint.textContent='Ready';
+    }
+
+    function dayIsoFromIndex(i){
+      const th=head.querySelector(`th:nth-child(${i+2})`);
+      return th?th.dataset.iso:'';
+    }
+
+    function gather(mon){
+      const out=[["week_start","tech","day","slot","type","details","notes","status"]];
+      const trs=[...body.querySelectorAll('tr')].filter(tr=>tr.querySelector('.del'));
+
+      trs.forEach(tr=>{
+        const tech=tr.querySelector('.sticky-left input')?.value?.trim()||'';
+        if(!tech)return;
+        const tds=tr.querySelectorAll('td');
+        for(let i=1;i<tds.length;i++){
+          const td=tds[i];
+          const day=dayIsoFromIndex(i-1);
+          const notes=td.querySelector('.notes')?.value||'';
+          [
+            ["s1t","s1p","s1done","1"],
+            ["s2t","s2p","s2done","2"]
+          ].forEach(([t,p,c,slot])=>{
+            const type=td.querySelector('.'+t)?.value||'';
+            const det=td.querySelector('.'+p)?.value||'';
+            const done=td.querySelector('.'+c)?.checked?'Y':'';
+            out.push([mon,tech,day,slot,type,det,notes,done]);
+          });
+        }
+      });
+      return out;
+    }
+
+    async function saveNow(){
+      const mon=week.value;
+      if(!mon){
+        alert('Select a week');
+        return;
+      }
+      const csv=toCSV(gather(mon));
+      hint.textContent='Saving…';
+      try{
+        let r=await fetch('/weekly-grind/api/save',{
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({mondayISO:mon,csv})
+        });
+        if(r.ok){
+          hint.textContent='Saved';
+          hint.classList.add('saved');
+          lastSaved.textContent='Last saved: '+new Date().toLocaleString();
+        }else{
+          hint.textContent='Save failed';
+        }
+      }catch(e){
+        hint.textContent='Save failed';
+      }
+    }
+
+    const todayISO=toISO(new Date());
+    const monISO=mondayOf(todayISO);
+    week.value=monISO;
+    week.addEventListener('change',e=>load(e.target.value));
+    saveBtn.addEventListener('click',saveNow);
+    load(monISO);
+  </script>
+</body>
+</html>

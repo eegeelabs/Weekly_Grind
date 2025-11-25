@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weekly Grind – New Project</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 1rem 1.5rem 2rem;
+      background: #0b1120;
+      color: #e5e7eb;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin: 0;
+    }
+    .meta {
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+    a.link {
+      color: #93c5fd;
+      text-decoration: none;
+    }
+    .form-card {
+      max-width: 900px;
+      border-radius: 0.75rem;
+      border: 1px solid #111827;
+      background: #020617;
+      padding: 1rem 1.25rem 1.5rem;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem 1rem;
+      margin-top: 0.75rem;
+    }
+label {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+input, select, textarea {
+  background: #020617;
+  border: 1px solid #1f2937;
+  color: #e5e7eb;
+  padding: 0.3rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}    textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .actions {
+      margin-top: 1rem;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+    button {
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      padding: 0.4rem 0.9rem;
+      font-size: 0.85rem;
+      cursor: pointer;
+      background: #1d4ed8;
+      color: #e5e7eb;
+    }
+    button.secondary {
+      background: transparent;
+      color: #9ca3af;
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+    .messages {
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+    }
+    .messages .error {
+      color: #fecaca;
+    }
+    .messages .success {
+      color: #bbf7d0;
+    }
+    .required {
+      color: #f97316;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>New Project</h1>
+      <div class="meta">Create or update a project (PID comes from the other system).</div>
+    </div>
+    <div class="meta">
+      <a href="/weekly-grind/projects" class="link">← Back to Projects</a>
+    </div>
+  </header>
+
+  <div class="form-card">
+    <form id="projectForm" autocomplete="off">
+      <div class="form-grid">
+       	<label>
+  	  <span class="field-label">PID<span class="required">*</span></span>
+  	  <input type="text" name="pid" required />
+	</label>
+	<label>
+  	  <span class="field-label">Client ID</span>
+  	  <input type="text" name="client_id" />
+	</label>
+	<label>
+	  <span class="field-label">Project Name<span class="required">*</span></span>
+	  <input type="text" name="project_name" required />
+	</label>
+        <label>
+          Status
+          <select name="status">
+            <option value="open">open</option>
+            <option value="on_hold">on_hold</option>
+            <option value="complete">complete</option>
+            <option value="cancelled">cancelled</option>
+          </select>
+        </label>
+        <label>
+          Customer Temp (1–5)
+          <input type="number" name="customer_temp" min="1" max="5" />
+        </label>
+   	<label>
+  	  <span class="field-label">Date Opened<span class="required">*</span></span>
+  	  <input type="date" name="date_project_opened" required />
+	</label>
+        <label>
+          HW Received
+          <input type="date" name="date_hardware_received" />
+        </label>
+        <label>
+          HW ETA
+          <input type="date" name="hardware_eta" />
+        </label>
+        <label>
+          HW Desktops
+          <input type="number" name="num_desktops" min="0" />
+        </label>
+        <label>
+          HW Laptops
+          <input type="number" name="num_laptops" min="0" />
+        </label>
+        <label>
+          # Images
+          <input type="number" name="num_images" min="0" />
+        </label>
+        <label>
+          Onsite / Ship
+          <select name="onsite_or_ship">
+            <option value="">(none)</option>
+            <option value="onsite">onsite</option>
+            <option value="ship">ship</option>
+            <option value="mixed">mixed</option>
+          </select>
+        </label>
+        <label>
+          Onsite Scheduled?
+          <select name="onsite_scheduled">
+            <option value="">(unknown)</option>
+            <option value="true">yes</option>
+            <option value="false">no</option>
+          </select>
+        </label>
+        <label>
+          Onsite Date
+          <input type="date" name="onsite_date" />
+        </label>
+        <label>
+          Last Contact Date
+          <input type="date" name="date_last_contacted" />
+        </label>
+        <label>
+          Last Contact Method
+          <select name="contact_method">
+            <option value="">(none)</option>
+            <option value="call">call</option>
+            <option value="email">email</option>
+            <option value="meeting">meeting</option>
+          </select>
+        </label>
+      </div>
+
+      <label style="margin-top:0.75rem;">
+        Description / Notes
+        <textarea name="description"></textarea>
+      </label>
+      <label style="margin-top:0.25rem;">
+        Internal Notes
+        <textarea name="notes"></textarea>
+      </label>
+
+      <div class="actions">
+        <button type="button" class="secondary" onclick="window.location.href='/weekly-grind/projects'">
+          Cancel
+        </button>
+        <button type="submit" id="submitBtn">
+          Save Project
+        </button>
+      </div>
+
+      <div class="messages" id="messages"></div>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById('projectForm');
+    const messages = document.getElementById('messages');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function setMessage(text, type) {
+      if (!text) {
+        messages.innerHTML = '';
+        return;
+      }
+      messages.innerHTML = '<span class="' + type + '">' + text + '</span>';
+    }
+
+    function val(name) {
+      return form.elements[name].value.trim();
+    }
+
+    function valOrNull(name) {
+      const v = val(name);
+      return v === '' ? null : v;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      setMessage('', '');
+
+      const pid = val('pid');
+      const project_name = val('project_name');
+      const date_project_opened = val('date_project_opened');
+
+      if (!pid || !project_name || !date_project_opened) {
+        setMessage('PID, Project Name, and Date Opened are required.', 'error');
+        return;
+      }
+
+      const payload = {
+        pid,
+        client_id: valOrNull('client_id'),
+        project_name,
+        description: valOrNull('description'),
+        num_desktops: valOrNull('num_desktops'),
+        num_laptops: valOrNull('num_laptops'),
+        num_images: valOrNull('num_images'),
+        onsite_or_ship: valOrNull('onsite_or_ship'),
+        onsite_scheduled: (() => {
+          const v = val('onsite_scheduled');
+          if (v === 'true') return true;
+          if (v === 'false') return false;
+          return null;
+        })(),
+        onsite_date: valOrNull('onsite_date'),
+        date_project_opened,
+        date_hardware_received: valOrNull('date_hardware_received'),
+        hardware_eta: valOrNull('hardware_eta'),
+        date_last_contacted: valOrNull('date_last_contacted'),
+        contact_method: valOrNull('contact_method'),
+        customer_temp: valOrNull('customer_temp'),
+        status: valOrNull('status') || 'open',
+        notes: valOrNull('notes')
+      };
+
+      try {
+        submitBtn.disabled = true;
+        setMessage('Saving project…', 'success');
+
+        const res = await fetch('/api/projects', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const body = await res.json();
+
+        if (!res.ok) {
+          console.error('API error', body);
+          setMessage(body.error || 'Failed to save project.', 'error');
+          submitBtn.disabled = false;
+          return;
+        }
+
+        setMessage('Project saved. Redirecting…', 'success');
+        // small delay then go back to list
+        setTimeout(() => {
+          window.location.href = '/weekly-grind/projects';
+        }, 600);
+      } catch (err) {
+        console.error('Request failed', err);
+        setMessage('Request failed. Check network or backend logs.', 'error');
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

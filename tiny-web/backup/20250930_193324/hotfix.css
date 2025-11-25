@@ -1,0 +1,202 @@
+/* ================= Weekly Grind Hotfix ================= */
+
+/* Remove pseudo/border/shadow ghosts on empty elements */
+.wg-is-empty::before,
+.wg-is-empty::after { content: none !important; }
+
+.wg-is-empty:not(td):not(th):not(tr):not(table) {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Visually-empty “pills” flagged by JS */
+.wg-visual-empty::before,
+.wg-visual-empty::after { content: none !important; }
+
+.wg-visual-empty {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  display: none !important;   /* only the element, not all descendants */
+}
+
+/* ================= View Grid Layout ================= */
+
+/* Main table: auto size to content, fill width, no wrapping */
+#wg-view table,
+.weekly-grid table,
+#grid table {
+  table-layout: auto !important;     /* columns size to their content */
+  width: 100% !important;            /* stretch across container */
+  border-collapse: separate !important;
+  border-spacing: 8px 3px !important;  /* horizontal / vertical gaps */
+}
+
+/* Header + cells */
+#wg-view th, #wg-view td,
+.weekly-grid th, .weekly-grid td,
+#grid th, #grid td {
+  vertical-align: top !important;
+  height: auto !important;
+  min-height: 0 !important;
+  padding: 3px 6px !important;
+  white-space: nowrap !important;    /* no wrapping */
+  line-height: 1.2;                  /* tighter row height */
+}
+
+/* Inline blocks inside cells stay on one line */
+#wg-view td > *, .weekly-grid td > *, #grid td > * {
+  display: inline-block !important;
+  margin: 2px 6px 2px 0 !important;
+}
+#wg-view td > *:last-child,
+.weekly-grid td > *:last-child,
+#grid td > *:last-child {
+  margin-right: 0 !important;
+}
+
+/* Optional: headers don’t wrap */
+#wg-view th,
+.weekly-grid th,
+#grid th {
+  white-space: nowrap !important;
+}
+
+/* === View: vertical compaction (no wasted height) ===================== */
+#wg-view table,
+.weekly-grid table,
+#grid table {
+  border-spacing: 8px 2px !important;   /* smaller vertical gap */
+}
+
+#wg-view tr,
+.weekly-grid tr,
+#grid tr {
+  height: auto !important;              /* no equalized rows */
+}
+
+#wg-view th, #wg-view td,
+.weekly-grid th, .weekly-grid td,
+#grid th, #grid td {
+  padding: 2px 6px !important;          /* tighter cell padding */
+  line-height: 1.1 !important;          /* denser text */
+  vertical-align: top !important;       /* stack from the top */
+  min-height: 0 !important;
+}
+
+/* Trim vertical margins for direct children inside cells */
+#wg-view td > *, .weekly-grid td > *, #grid td > * {
+  margin-top: 1px !important;
+  margin-bottom: 1px !important;
+}
+#wg-view td > *:first-child,
+.weekly-grid td > *:first-child,
+#grid td > *:first-child { margin-top: 0 !important; }
+#wg-view td > *:last-child,
+.weekly-grid td > *:last-child,
+#grid td > *:last-child { margin-bottom: 0 !important; }
+
+/* Common pill/card/tag-like elements—shrink internal padding/height */
+#wg-view td .pill, #wg-view td .badge, #wg-view td .chip, #wg-view td .tag,
+.weekly-grid td .pill, .weekly-grid td .badge, .weekly-grid td .chip, .weekly-grid td .tag,
+#grid td .pill, #grid td .badge, #grid td .chip, #grid td .tag {
+  line-height: 1.1 !important;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  min-height: 0 !important;
+}
+
+/* Flex wrappers: prevent tall stretching */
+#wg-view td .flex, #wg-view td [style*="display:flex"],
+.weekly-grid td .flex, .weekly-grid td [style*="display:flex"],
+#grid td .flex, #grid td [style*="display:flex"] {
+  align-items: flex-start !important;
+  gap: 4px !important;                  /* avoid big vertical gaps inside flex rows */
+  flex-wrap: nowrap !important;
+}
+
+/* === Force tighter cell padding & line-height === */
+#wg-view th, #wg-view td,
+.weekly-grid th, .weekly-grid td,
+#grid th, #grid td {
+  padding: 2px 6px !important;     /* override theme's 8px 10px */
+  line-height: 1.1 !important;     /* shrink text height */
+  vertical-align: top !important;
+  min-height: 0 !important;
+}
+
+/* === Kill tall row forcing from .cell wrappers (View) =================== */
+#wg-view td .cell,
+.weekly-grid td .cell,
+#grid td .cell {
+  min-height: 0 !important;              /* override 140px */
+  /* keep grid if you rely on it, but stop it from stretching */
+  grid-template-rows: none !important;
+  grid-auto-rows: min-content !important;
+  align-content: start !important;
+  gap: 2px !important;                    /* was 6px */
+}
+
+/* If you don't actually need CSS grid on those wrappers,
+   this alternative makes them behave like compact inline blocks:
+   (uncomment to use instead of the block above)
+#wg-view td .cell,
+.weekly-grid td .cell,
+#grid td .cell {
+  display: inline-block !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+*/
+
+/* === View: HARD no-wrap everywhere in the grid ======================= */
+#wg-view th, #wg-view td,
+.weekly-grid th, .weekly-grid td,
+#grid th, #grid td {
+  white-space: nowrap !important;
+}
+
+#wg-view td *, .weekly-grid td *, #grid td * {
+  white-space: nowrap !important;     /* beat any component defaults */
+}
+
+/* Some themes force wrap on grid wrappers */
+#wg-view td .cell, .weekly-grid td .cell, #grid td .cell {
+  white-space: nowrap !important;
+}
+
+/* Optional but useful if content exceeds column width */
+#wg-view td, .weekly-grid td, #grid td {
+  overflow: hidden; 
+  text-overflow: ellipsis;
+}
+
+/* === View: NO horizontal scroll (fill width, no wrap + ellipsis) ======= */
+#wg-view, .weekly-grid, #grid { overflow-x: hidden !important; }
+
+#wg-view table,
+.weekly-grid table,
+#grid table {
+  width: 100% !important;            /* fill the container */
+  table-layout: fixed !important;     /* distribute columns */
+  border-collapse: separate !important;
+}
+
+/* Cells: hard nowrap, clip overflow with ellipsis */
+#wg-view th, #wg-view td,
+.weekly-grid th, .weekly-grid td,
+#grid th, #grid td {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  min-width: 0 !important;            /* allow columns to shrink */
+}
+
+/* Optional: make the first column (Tech) a bit wider */
+#wg-view th:nth-child(1), #wg-view td:nth-child(1),
+.weekly-grid th:nth-child(1), .weekly-grid td:nth-child(1),
+#grid th:nth-child(1), #grid td:nth-child(1) {
+  width: 200px !important;            /* tweak 180–240 as you like */
+}

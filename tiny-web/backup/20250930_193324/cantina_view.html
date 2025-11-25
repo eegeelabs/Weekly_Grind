@@ -1,14 +1,6 @@
-#!/usr/bin/env bash
-set -euo pipefail
-WG="$HOME/tiny-web/public/weekly-grind"
-VIEW="$WG/cantina_view.html"
-ts="$(date +%s)"
-[[ -f "$VIEW" ]] && cp -f "$VIEW" "$VIEW.bak.$ts"
-
-cat > "$VIEW" <<'HTML'
 <!doctype html><html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Weekly Grind — View</title>
+<title>Weekly Grind - View</title>
 <style>
 :root{--bg:#0f1220;--card:#171a2b;--muted:#8892b0;--text:#e6e9ff;--soft:rgba(255,255,255,.08)}
 *{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#0f1220;color:var(--text)}
@@ -30,8 +22,12 @@ tbody .sticky-left{background:#151a2c;z-index:2}
 .notes{grid-column:1 / -1}
 .muted{color:#8892b0}
 </style>
-</head><body>
-<header><div class="wrap" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+  <link rel="stylesheet" href="/weekly-grind/css/hotfix.css">
+</head><link rel="icon" type="image/jpeg" href="/weekly-grind/mos-eisley-cantina-logo.jpg">
+<body>
+<header>
+
+<div class="wrap" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
   <h1>Configuration Cantina — Weekly Grid</h1><div style="flex:1"></div>
   <label>Week: <select id="week"></select></label>
   <a href="/weekly-grind/admin" style="margin-left:8px">Admin</a>
@@ -117,7 +113,7 @@ function fetchTechs(){
 
 function buildWeeks(){
   var start=mondayLocal(new Date()), opts=[], i, d, v, l;
-  for(i=12;i>=-12;i--){
+  for(i=3;i>=-3;i--){
     d=addDays(start,-7*i); v=isoLocal(d);
     l=d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'2-digit'});
     opts.push({v:v, l:l});
@@ -185,6 +181,8 @@ buildWeeks();
 week.addEventListener('change', function(e){ load(e.target.value); });
 load(week.value);
 </script>
+  <script defer src="/weekly-grind/js/csv-normalize-fix.js"></script>
+  <script defer src="/weekly-grind/js/csv-parser-fix.js"></script>
+  <script defer src="/weekly-grind/js/view-compact-fix.js"></script>
+  <script defer src="/weekly-grind/js/view-spacing-fix.js"></script>
 </body></html>
-HTML
-echo "Wrote $VIEW (backup at $VIEW.bak.$ts if existed)"

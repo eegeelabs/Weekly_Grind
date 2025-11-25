@@ -1,180 +1,287 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Weekly Grind — View</title>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Weekly Grind View</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <style>
-:root{--bg:#0f1220;--card:#171a2b;--muted:#8892b0;--text:#e6e9ff;--soft:rgba(255,255,255,.08)}
-*{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:#0f1220;color:var(--text)}
-header{position:sticky;top:0;z-index:5;background:rgba(15,18,32,.9);border-bottom:1px solid var(--soft)}
-.wrap{max-width:1400px;margin:0 auto;padding:12px 16px}
-h1{margin:0;font-size:20px}
-select{background:#0d1224;border:1px solid var(--soft);color:var(--text);border-radius:10px;padding:6px 10px}
-main{padding:18px}.table-wrap{overflow:auto;border:1px solid var(--soft);border-radius:14px;background:#171a2b}
-table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px}
-thead th{position:sticky;top:0;background:#1a1e33;color:#cbd5ff;border-bottom:1px solid var(--soft);font-weight:600;text-align:center}
-th,td{padding:8px 10px;border-right:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);vertical-align:top}
-th:last-child,td:last-child{border-right:0}.sticky-left{position:sticky;left:0;background:#1a1e33;color:#e6e9ff;font-weight:600;z-index:3}
-tbody .sticky-left{background:#151a2c;z-index:2}
-/* Cell layout tweaks */
-.cell{display:grid;grid-template-rows:auto auto auto;gap:6px;min-height:140px}
-.row{display:grid;grid-template-columns:max-content 1fr;gap:6px;align-items:center}
-.tag{display:inline-flex;align-items:center;justify-content:center;border-radius:8px;background:#0b1020;border:1px solid var(--soft);font-weight:700;padding:4px 10px;white-space:nowrap}
-.text{background:#0d1224;border:1px solid var(--soft);color:#e6e9ff;border-radius:8px;padding:6px 8px}
-.notes{grid-column:1 / -1}
-.muted{color:#8892b0}
-</style>
-</head><body>
-<header><div class="wrap" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-  <h1>Configuration Cantina — Weekly Grid</h1><div style="flex:1"></div>
-  <label>Week: <select id="week"></select></label>
-  <a href="/weekly-grind/admin" style="margin-left:8px">Admin</a>
-</div></header>
-<main class="wrap">
-  <div class="table-wrap"><table><thead><tr id="head"></tr></thead><tbody id="body"></tbody></table></div>
-  <div id="meta" class="muted" style="margin-top:8px">&nbsp;</div>
-</main>
-<script>
-/* ---------- helpers ---------- */
-var head=document.querySelector('#head'), body=document.querySelector('#body'),
-    week=document.querySelector('#week'), meta=document.querySelector('#meta');
+:root {
+  --bg: #0f1520;
+  --panel: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --line: #1f2937;
+  --ok: #10b981;
+}
+html, body { height:100%; }
+body { background: var(--bg); color: var(--text); margin:0; font:14px system-ui, -apple-system, Segoe UI, Arial; }
+header {
+  background: var(--panel);
+  padding:10px;
+  border-bottom:1px solid var(--line);
+  position:sticky;
+  top:0;
+  z-index:10;
+  display:flex;
+  gap:6px;
+  align-items:center;
+  justify-content:space-between;
+}
+header small { color:var(--muted); }
 
-function esc(s){ s = (s==null?'':String(s)); return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function isoLocal(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,'0')+"-"+String(d.getDate()).padStart(2,'0'); }
-function addDays(d,n){ var x=new Date(d); x.setDate(x.getDate()+n); return x; }
-function mondayLocal(d){ var x=new Date(d.getFullYear(),d.getMonth(),d.getDate()); var w=x.getDay(); x.setDate(x.getDate()+(w===0?-6:1-w)); return x; }
-function dayLabels(monISO){
-  var p=monISO.split('-').map(Number), base=new Date(p[0],p[1]-1,p[2]);
-  var out=[], i, x, lbl;
-  for(i=0;i<5;i++){
-    x=addDays(base,i);
-    lbl=x.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'2-digit'});
-    out.push({iso: isoLocal(x), label: lbl});
+/* Collapsible tech blocks */
+.tech-block { border-bottom:1px solid var(--line); }
+.tech-head { display:flex; justify-content:space-between; padding:10px; cursor:pointer; background:#0b1322; }
+.tech-head:hover { background:#121c2c; }
+.tech-head .name { font-weight:600; }
+.tech-body { display:block; padding:10px; }
+
+/* Day grid */
+.day-row { display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; margin-bottom:12px; }
+.day-cell { background:#111827; border:1px solid var(--line); padding:8px; border-radius:6px; }
+.day-title { font-weight:600; margin-bottom:6px; display:flex; justify-content:space-between; }
+.day-title small { color:var(--muted); }
+
+/* Tasks */
+.task {
+  border-radius:4px;
+  padding:2px 6px;
+  display:grid;
+  grid-template-columns: 1fr auto; /* left: tag + details, right: checkbox */
+  align-items:center;
+  gap:8px;
+  margin-bottom:4px;
+}
+.task.done { opacity:0.4; }
+
+/* Type color tags */
+.type-tag { font-weight:600; padding:1px 4px; border-radius:4px; font-size:12px; margin-right:6px; }
+.type-IMG{background:#2563eb33;color:#60a5fa;}
+.type-Testing{background:#7c3aed33;color:#c4b5fd;}
+.type-Deploy{background:#05966933;color:#6ee7b7;}
+.type-PC-O{background:#d9770633;color:#fcd34d;}
+.type-R\/R{background:#dc262633;color:#fca5a5;}
+.type-Other{background:#6b728033;color:#d1d5db;}
+
+.notes { margin-top:6px; font-size:13px; color:var(--muted); white-space:pre-line; }
+
+.hint { color:var(--muted); font-size:12px; margin-left:10px; }
+.hint.ok { color:var(--ok); }
+</style>
+</head>
+<body>
+<header>
+  <strong>Weekly Grind</strong>
+  <span>
+    Week: <input id="week" type="date">
+    <span id="updated" class="hint"></span>
+    <span id="hint" class="hint"></span>
+  </span>
+</header>
+<div id="content"></div>
+
+<script>
+const content = document.getElementById('content');
+const week    = document.getElementById('week');
+const hint    = document.getElementById('hint');
+const updated = document.getElementById('updated');
+
+const pad2=n=>String(n).padStart(2,'0');
+const toISO=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+function mondayOf(iso){ const d=new Date(`${iso}T00:00:00`); const w=d.getDay(); d.setDate(d.getDate()+(w===0?-6:1-w)); return toISO(d); }
+
+/* CSV helpers */
+function parseCSV(text){
+  let rows=[],i=0,field='',inQ=false,row=[];
+  const push=()=>{row.push(field);field='';};
+  const end =()=>{rows.push(row);row=[];};
+  while(i<text.length){
+    const ch=text[i++];
+    if(inQ){
+      if(ch=='"'){ if(text[i]=='"'){ field+='"'; i++; } else inQ=false; }
+      else field+=ch;
+    }else{
+      if(ch=='"') inQ=true;
+      else if(ch==',') push();
+      else if(ch=='\n'){ push(); end(); }
+      else if(ch!='\r') field+=ch;
+    }
+  }
+  if(field.length||row.length){ push(); end(); }
+  return rows;
+}
+function csvEscape(v){ if(v==null)v=''; let s=String(v); if(/[",\n]/.test(s)) s='"'+s.replace(/"/g,'""')+'"'; return s; }
+function toCSV(rows){ return rows.map(r=>r.map(csvEscape).join(',')).join('\n')+'\n'; }
+function normalize(rows){
+  const head=rows[0]||[];
+  const idx={}; ['week_start','tech','day','slot','type','details','notes','status'].forEach(k=>idx[k]=head.indexOf(k));
+  const out=[];
+  for(let i=1;i<rows.length;i++){
+    const r=rows[i]; if(!r||!r.length) continue;
+    out.push({ week_start:r[idx.week_start]||'', tech:r[idx.tech]||'', day:r[idx.day]||'',
+               slot:r[idx.slot]||'', type:r[idx.type]||'', details:r[idx.details]||'',
+               notes:r[idx.notes]||'', status:r[idx.status]||'' });
+  }
+  return out;
+}
+function denormalize(rows){
+  const head=['week_start','tech','day','slot','type','details','notes','status'];
+  const body = rows.map(r=>[r.week_start,r.tech,r.day,r.slot,r.type,r.details,r.notes,r.status]);
+  return [head, ...body];
+}
+
+function dayLabels(mon){
+  const d=new Date(`${mon}T00:00:00`); const names=['Mon','Tue','Wed','Thu','Fri']; const out=[];
+  for(let i=0;i<5;i++){ const dd=new Date(d); dd.setDate(d.getDate()+i);
+    out.push({ iso:toISO(dd), label:names[i], md:toISO(dd).slice(5).replace('-','/') });
   }
   return out;
 }
 
-/* robust CSV parse + normalize (slot->Number, fields trimmed) */
-function parseCSV(t){
-  var r=[], i=0, f='', row=[], qq=false, c;
-  while(i<t.length){
-    c=t[i];
-    if(qq){
-      if(c=='"' && t[i+1]=='"'){ f+='"'; i+=2; continue; }
-      if(c=='"'){ qq=false; i++; continue; }
-      f+=c; i++; continue;
-    }
-    if(c=='"'){ qq=true; i++; continue; }
-    if(c===','){ row.push(f); f=''; i++; continue; }
-    if(c==='\n' || c==='\r'){
-      if(f!=='' || row.length){ row.push(f); r.push(row); }
-      row=[]; f='';
-      if(c==='\r' && t[i+1]==='\n') i++;
-      i++; continue;
-    }
-    f+=c; i++;
-  }
-  if(f!=='' || row.length){ row.push(f); r.push(row); }
-  return r.filter(function(a){ return a.length && !(a.length===1 && a[0]===''); });
-}
+/* Load + render */
+async function load(mon){
+  hint.textContent = '';
+  const resp = await fetch(`/weekly-grind/cantina-schedule-${mon}.csv`, {cache:'no-store'});
+  const rows = normalize(parseCSV(await resp.text()));
+  const techs=[...new Set(rows.map(r=>r.tech).filter(Boolean))].sort();
+  const DAYS=dayLabels(mon);
+  content.innerHTML='';
 
-function normalize(rows){
-  function trim(v){ return String(v==null?'':v).replace(/[\r\n]+/g,'').trim(); }
-  var h=rows[0].map(function(s){return trim(s);});
-  function ix(a){ return h.indexOf(a); }
-  var I={week_start:ix('week_start'),tech:ix('tech'),day:ix('day'),slot:ix('slot'),type:ix('type'),details:ix('details'),notes:ix('notes'),status:ix('status')};
-  if([I.week_start,I.tech,I.day,I.slot,I.type,I.details,I.notes,I.status].some(function(i){return i<0;})) return {rows:[]};
-  var out = rows.slice(1).map(function(r){
-    return {
-      week_start: trim(r[I.week_start]),
-      tech:       trim(r[I.tech]),
-      day:        trim(r[I.day]),
-      slot:       parseInt(trim(r[I.slot]||'0'),10)||0,
-      type:       trim(r[I.type]||''),
-      details:    trim(r[I.details]||''),
-      notes:      trim(r[I.notes]||''),
-      status:     trim(r[I.status]||'')
-    };
-  });
-  return {rows: out};
-}
+  techs.forEach(t=>{
+    const block=document.createElement('div'); block.className='tech-block';
+    const head =document.createElement('div'); head.className='tech-head'; head.innerHTML=`<span class="name">${t}</span>`;
+    const body =document.createElement('div'); body.className='tech-body';
+    const dayRow=document.createElement('div'); dayRow.className='day-row';
 
-function fetchTechs(){
-  return fetch('/weekly-grind/techs.json',{cache:'no-store'}).then(function(res){
-    if(!res.ok) return [];
-    return res.json();
-  }).then(function(j){
-    if(j && Array.isArray(j.techs)) return j.techs;
-    return Array.isArray(j) ? j : [];
-  }).catch(function(){ return []; });
-}
+    DAYS.forEach(d=>{
+      const cell=document.createElement('div'); cell.className='day-cell';
+      cell.innerHTML=`<div class="day-title">${d.label} <small>${d.md}</small></div>`;
+      const r1=rows.find(r=>r.tech===t&&r.day===d.iso&&r.slot=='1');
+      const r2=rows.find(r=>r.tech===t&&r.day===d.iso&&r.slot=='2');
 
-function buildWeeks(){
-  var start=mondayLocal(new Date()), opts=[], i, d, v, l;
-  for(i=12;i>=-12;i--){
-    d=addDays(start,-7*i); v=isoLocal(d);
-    l=d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'2-digit'});
-    opts.push({v:v, l:l});
-  }
-  week.innerHTML = opts.map(function(o){
-    return '<option value="'+o.v+'">'+o.l+'</option>';
-  }).join('');
-  week.value = isoLocal(start);
-}
+      [ ['1',r1], ['2',r2] ].forEach(([slot,r])=>{
+        if(!r) return;
+        const done=/^(y|1|true)$/i.test(r.status||'');
+        const div=document.createElement('div'); div.className='task'+(done?' done':'');
+        div.innerHTML = `
+          <div>
+            <span class="type-tag type-${(r.type||'Other').replace(/[^A-Za-z0-9]/g,'_')}">${r.type||''}</span>
+            <span>${r.details||''}</span>
+          </div>
+          <input type="checkbox"
+                 class="done-toggle"
+                 data-tech="${t}"
+                 data-day="${d.iso}"
+                 data-slot="${slot}"
+                 ${done?'checked':''}
+          >`;
+        cell.appendChild(div);
+      });
 
-function load(monISO){
-  var url='/weekly-grind/cantina-schedule-'+monISO+'.csv';
-  meta.textContent='Loading…';
-  Promise.all([fetch(url,{cache:'no-store'}), fetchTechs()]).then(function(arr){
-    var res=arr[0], techsJson=arr[1]||[];
-    return res.text().then(function(text){
-      var norm = normalize(parseCSV(text));
-      render(monISO, norm.rows, techsJson, res.headers.get('Last-Modified'));
+      const notes=(r1&&r1.notes)||(r2&&r2.notes)||'';
+      if(notes) cell.innerHTML += `<div class="notes">${notes}</div>`;
+
+      dayRow.appendChild(cell);
     });
+
+    body.appendChild(dayRow);
+    block.appendChild(head); block.appendChild(body);
+    head.onclick = () => { body.style.display = body.style.display==='block' ? 'none':'block'; };
+    content.appendChild(block);
   });
+
+  // update last-modified
+  try{
+    const headResp = await fetch(`/weekly-grind/cantina-schedule-${mon}.csv`, { method:'HEAD' });
+    const lm = headResp.headers.get('last-modified');
+    if(lm) updated.textContent = `Last updated: ${new Date(lm).toLocaleString()}`;
+  }catch{}
 }
 
-function render(monISO, rows, techsJson, lastMod){
-  var days = dayLabels(monISO);
-  var fromCSV = rows.map(function(r){ return r.tech; });
-  var techsSet = {};
-  (Array.isArray(techsJson)?techsJson:[]).concat(fromCSV).forEach(function(t){ if(t) techsSet[t]=1; });
-  var techs = Object.keys(techsSet).sort(function(a,b){ return a.localeCompare(b,undefined,{sensitivity:'base'}); });
+/* Inline save: toggle a single status and persist the CSV */
+async function saveToggle(mon, tech, day, slot, isDone){
+  try{
+    hint.classList.remove('ok');
+    hint.textContent='Saving…';
 
-  // header
-  var h = '<th class="sticky-left">Technician</th>';
-  for(var i=0;i<days.length;i++){ h += '<th>'+days[i].label+'</th>'; }
-  head.innerHTML = h;
+    // 1) Pull latest CSV
+    const r = await fetch(`/weekly-grind/cantina-schedule-${mon}.csv`, {cache:'no-store'});
+    const rows = parseCSV(await r.text());
+    const head = rows[0] || [];
+    const idx = {};
+    ['week_start','tech','day','slot','type','details','notes','status'].forEach(k=>idx[k]=head.indexOf(k));
 
-  // body
-  var b = '';
-  for(var ti=0; ti<techs.length; ti++){
-    var tech = techs[ti];
-    b += '<tr><td class="sticky-left">'+esc(tech)+'</td>';
-    for(var di=0; di<days.length; di++){
-      var dISO = days[di].iso;
-      var s1=null, s2=null, note='';
-      for(var k=0;k<rows.length;k++){
-        var r=rows[k];
-        if(r.tech===tech && r.day===dISO){
-          if(r.slot===1) s1=r;
-          else if(r.slot===2) s2=r;
-          if(r.notes) note=r.notes;
-        }
+    // 2) Find target row; if missing, create a minimal row
+    let found = false;
+    for(let i=1;i<rows.length;i++){
+      const rr = rows[i];
+      if(rr[idx.tech]===tech && rr[idx.day]===day && rr[idx.slot]===slot){
+        rr[idx.status] = isDone ? 'Y' : '';
+        found = true; break;
       }
-      b += '<td><div class="cell">'
-         +   '<div class="row"><div class="tag">'+esc(s1&&s1.type||'')+'</div><div class="text">'+esc(s1&&s1.details||'')+'</div></div>'
-         +   '<div class="row"><div class="tag">'+esc(s2&&s2.type||'')+'</div><div class="text">'+esc(s2&&s2.details||'')+'</div></div>'
-         +   '<div class="row notes"><div class="text" style="grid-column:1 / -1">'+esc(note)+'</div></div>'
-         + '</div></td>';
     }
-    b += '</tr>';
-  }
-  body.innerHTML = b;
+    if(!found){
+      const newRow = new Array(head.length).fill('');
+      newRow[idx.week_start] = mon;
+      newRow[idx.tech]       = tech;
+      newRow[idx.day]        = day;
+      newRow[idx.slot]       = slot;
+      newRow[idx.status]     = isDone ? 'Y' : '';
+      rows.push(newRow);
+    }
 
-  meta.textContent = lastMod ? ('Loaded • Last modified '+ new Date(lastMod).toLocaleString()) : 'Loaded';
+    // 3) Post back via existing Admin save endpoint
+    const csvText = rows.map(r=>r.map(csvEscape).join(',')).join('\n')+'\n';
+    const resp = await fetch('/weekly-grind/api/save', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ mondayISO: mon, csv: csvText })
+    });
+
+    if(!resp.ok) throw new Error('Save failed');
+
+    hint.textContent='Saved';
+    hint.classList.add('ok');
+
+    // refresh the "last updated" timestamp
+    try{
+      const headResp = await fetch(`/weekly-grind/cantina-schedule-${mon}.csv`, { method:'HEAD' });
+      const lm = headResp.headers.get('last-modified');
+      if(lm) updated.textContent = `Last updated: ${new Date(lm).toLocaleString()}`;
+    }catch{}
+
+  }catch(e){
+    hint.textContent='Save failed';
+    console.error(e);
+    // Let UI stay as-is; user can re-toggle if needed
+  }finally{
+    setTimeout(()=>{ hint.textContent=''; hint.classList.remove('ok'); }, 1200);
+  }
 }
 
-buildWeeks();
-week.addEventListener('change', function(e){ load(e.target.value); });
-load(week.value);
+/* Delegated handler for done checkboxes */
+content.addEventListener('change', (ev)=>{
+  const el = ev.target;
+  if(!el.classList.contains('done-toggle')) return;
+  const mon  = week.value;
+  const tech = el.dataset.tech;
+  const day  = el.dataset.day;
+  const slot = el.dataset.slot;
+  const isDone = el.checked;
+
+  // fade/unfade immediately (optimistic)
+  const taskDiv = el.closest('.task');
+  if(taskDiv) taskDiv.classList.toggle('done', isDone);
+
+  saveToggle(mon, tech, day, slot, isDone);
+});
+
+/* boot */
+const todayISO = toISO(new Date());
+const monISO   = mondayOf(todayISO);
+week.value = monISO;
+week.addEventListener('change', e=>load(e.target.value));
+load(monISO);
 </script>
-</body></html>
+</body>
+</html>

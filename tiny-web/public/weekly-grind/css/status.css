@@ -1,0 +1,31 @@
+/* Completed highlight (applies to the whole cell) */
+td.wg-done, .cell.wg-done {
+  background: #04E762 !important;
+  border-color: #04E762 !important;
+}
+td.wg-done *, .cell.wg-done * {
+  color: #06210c !important; /* keep text readable on the green */
+}
+
+/* The small “Complete” label next to each Type/Details */
+.wg-status-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 12px/1 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  margin-top: 4px;
+}
+
+/* GREEN BORDER when a pair is checked AND saved */
+input[type="text"].wg-done-saved {
+  border: 2px solid #04E762 !important;
+  box-shadow: 0 0 0 1px rgba(4,231,98,0.25) inset !important;
+  border-radius: 6px;
+}
+
+/* (optional) You can add a subtle pending style if you want a pre-save cue:
+input[type="text"].wg-done-pending {
+  border: 2px dashed #C4B000 !important;
+  border-radius: 6px;
+}
+*/

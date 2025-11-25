@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weekly Grind – Users & Roles</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      margin: 0;
+      padding: 1.5rem;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #020617;
+      color: #e5e7eb;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      margin: 0;
+      font-size: 1.6rem;
+    }
+    a.nav-link {
+      color: #a5b4fc;
+      text-decoration: none;
+      margin-left: 1rem;
+      font-size: 0.9rem;
+    }
+    a.nav-link:hover { text-decoration: underline; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 2fr 1.5fr;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+
+    .card {
+      background: #020617;
+      border-radius: 0.75rem;
+      border: 1px solid #1f2937;
+      padding: 1rem 1.25rem;
+      box-shadow: 0 10px 40px rgba(15, 23, 42, 0.8);
+    }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    select, input[type="text"], input[type="email"], input[type="password"] {
+      background: #020617;
+      border-radius: 0.375rem;
+      border: 1px solid #374151;
+      padding: 0.3rem 0.4rem;
+      color: #e5e7eb;
+      font-size: 0.85rem;
+    }
+    select:focus, input:focus {
+      outline: none;
+      border-color: #6366f1;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8rem;
+    }
+    th, td {
+      padding: 0.35rem 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid #111827;
+    }
+    th {
+      font-weight: 600;
+      color: #9ca3af;
+      background: #020617;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    tbody tr:hover {
+      background: #020617;
+    }
+
+    .pill-role {
+      display: inline-block;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      border: 1px solid #4b5563;
+    }
+    .pill-role.admin { border-color: #facc15; color: #facc15; }
+    .pill-role.manager { border-color: #38bdf8; color: #38bdf8; }
+    .pill-role.supervisor { border-color: #22c55e; color: #22c55e; }
+    .pill-role.coordinator { border-color: #a855f7; color: #a855f7; }
+    .pill-role.tech { border-color: #6b7280; color: #9ca3af; }
+
+    .btn {
+      border-radius: 0.375rem;
+      border: 1px solid #4b5563;
+      background: #111827;
+      color: #e5e7eb;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .btn:hover { background: #1f2937; }
+    .btn-primary {
+      border-color: #4f46e5;
+      background: #4f46e5;
+    }
+    .btn-primary:hover {
+      background: #4338ca;
+    }
+    .btn-sm {
+      padding: 0.2rem 0.45rem;
+      font-size: 0.7rem;
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 0.4rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.4rem;
+      font-size: 0.7rem;
+      border-radius: 999px;
+      background: #111827;
+      border: 1px solid #1f2937;
+      margin: 0.05rem;
+    }
+
+    .listbox {
+      width: 100%;
+      min-height: 150px;
+      background: #020617;
+      border-radius: 0.5rem;
+      border: 1px solid #374151;
+      padding: 0.3rem;
+      overflow-y: auto;
+      font-size: 0.8rem;
+    }
+
+    .listbox-item {
+      padding: 0.2rem 0.35rem;
+      border-radius: 0.375rem;
+      cursor: pointer;
+    }
+    .listbox-item:hover {
+      background: #111827;
+    }
+    .listbox-item.selected {
+      background: #1d263b;
+      border: 1px solid #4f46e5;
+    }
+
+    .section-title {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #9ca3af;
+      margin-bottom: 0.3rem;
+      margin-top: 0.6rem;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-right: 0.25rem;
+    }
+    .status-dot.on { background: #22c55e; }
+    .status-dot.off { background: #ef4444; }
+
+    .hint {
+      font-size: 0.7rem;
+      color: #6b7280;
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Weekly Grind – Users & Roles</h1>
+      <div class="hint">Admin-only: manage accounts, roles, and reporting lines.</div>
+    </div>
+    <div>
+      <a href="/weekly-grind/admin" class="nav-link">&larr; Back to Admin</a>
+      <a href="/weekly-grind/projects" class="nav-link">Projects</a>
+      <a href="/weekly-grind/initiatives" class="nav-link">Initiatives</a>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- USERS TABLE / CRUD -->
+    <section class="card">
+      <div class="toolbar">
+        <div class="flex-row">
+          <label for="filterRole" class="section-title" style="margin:0;">Filter:</label>
+          <select id="filterRole">
+            <option value="">All roles</option>
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="supervisor">Supervisor</option>
+            <option value="coordinator">Coordinator</option>
+            <option value="tech">Tech</option>
+          </select>
+        </div>
+        <button id="btnNewUser" class="btn btn-primary">+ New User</button>
+      </div>
+
+      <div style="max-height: 420px; overflow: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Name</th>
+              <th>Role</th>
+              <th>Active</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="usersTableBody">
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- RELATIONSHIPS -->
+    <section class="card">
+      <h2>Reporting Lines</h2>
+
+      <div>
+        <div class="section-title">Supervisor ? Techs</div>
+        <div class="flex-row">
+          <select id="supervisorSelect"></select>
+          <button id="btnSaveSupervisorTechs" class="btn btn-sm btn-primary">Save Mapping</button>
+        </div>
+        <div class="hint">Choose a supervisor, then select which techs they are over.</div>
+        <div id="supervisorTechsList" class="listbox"></div>
+      </div>
+
+      <div style="margin-top: 1rem;">
+        <div class="section-title">Manager ? Supervisors</div>
+        <div class="flex-row">
+          <select id="managerSelect"></select>
+          <button id="btnSaveManagerSupers" class="btn btn-sm btn-primary">Save Mapping</button>
+        </div>
+        <div class="hint">Choose a manager, then select which supervisors report to them.</div>
+        <div id="managerSupersList" class="listbox"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Simple modal for new/edit user -->
+  <div id="userModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); align-items:center; justify-content:center;">
+    <div class="card" style="width: 380px; max-width: 100%;">
+      <h2 id="userModalTitle">New User</h2>
+      <div style="display:flex; flex-direction:column; gap:0.4rem;">
+        <label>
+          <span class="section-title">Username</span>
+          <input type="text" id="userUsername">
+        </label>
+        <label>
+          <span class="section-title">Display Name</span>
+          <input type="text" id="userDisplayName">
+        </label>
+        <label>
+          <span class="section-title">Email</span>
+          <input type="email" id="userEmail">
+        </label>
+        <label>
+          <span class="section-title">Role</span>
+          <select id="userRole">
+            <option value="admin">Admin</option>
+            <option value="manager">Manager</option>
+            <option value="supervisor">Supervisor</option>
+            <option value="coordinator">Coordinator</option>
+            <option value="tech">Tech</option>
+          </select>
+        </label>
+        <label id="passwordRow">
+          <span class="section-title">Password</span>
+          <input type="password" id="userPassword">
+        </label>
+        <label>
+          <span class="section-title">Active</span>
+          <select id="userActive">
+            <option value="true">Active</option>
+            <option value="false">Disabled</option>
+          </select>
+        </label>
+      </div>
+      <div class="flex-row" style="justify-content:flex-end; margin-top:0.75rem;">
+        <button id="userModalCancel" class="btn btn-sm">Cancel</button>
+        <button id="userModalSave" class="btn btn-sm btn-primary">Save</button>
+      </div>
+      <div id="userModalResetRow" class="hint" style="margin-top:0.5rem; display:none;">
+        To reset password for this user, use the reset button in the table row.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let users = [];
+    let relations = null;
+    let editingUserId = null;
+
+    async function fetchJSON(url, options) {
+      const res = await fetch(url, {
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        ...options
+      });
+      if (!res.ok) {
+        const msg = await res.text();
+        throw new Error(msg || res.statusText);
+      }
+      return res.json();
+    }
+
+    function renderUsers() {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '';
+
+      const roleFilter = document.getElementById('filterRole').value;
+      const filtered = roleFilter
+        ? users.filter(u => u.role === roleFilter)
+        : users;
+
+      for (const u of filtered) {
+        const tr = document.createElement('tr');
+
+        const tdUser = document.createElement('td');
+        tdUser.textContent = u.username;
+        tr.appendChild(tdUser);
+
+        const tdName = document.createElement('td');
+        tdName.textContent = u.display_name;
+        tr.appendChild(tdName);
+
+        const tdRole = document.createElement('td');
+        const spanRole = document.createElement('span');
+        spanRole.textContent = u.role;
+        spanRole.className = 'pill-role ' + u.role;
+        tdRole.appendChild(spanRole);
+        tr.appendChild(tdRole);
+
+        const tdActive = document.createElement('td');
+        const dot = document.createElement('span');
+        dot.className = 'status-dot ' + (u.active ? 'on' : 'off');
+        tdActive.appendChild(dot);
+        tdActive.appendChild(document.createTextNode(u.active ? 'Active' : 'Disabled'));
+        tr.appendChild(tdActive);
+
+        const tdActions = document.createElement('td');
+        const btnEdit = document.createElement('button');
+        btnEdit.className = 'btn btn-sm';
+        btnEdit.textContent = 'Edit';
+        btnEdit.onclick = () => openEditUser(u);
+        tdActions.appendChild(btnEdit);
+
+        const btnReset = document.createElement('button');
+        btnReset.className = 'btn btn-sm';
+        btnReset.style.marginLeft = '0.25rem';
+        btnReset.textContent = 'Reset PW';
+        btnReset.onclick = () => resetPassword(u);
+        tdActions.appendChild(btnReset);
+
+        tbody.appendChild(tr);
+      }
+    }
+
+    function openNewUser() {
+      editingUserId = null;
+      document.getElementById('userModalTitle').textContent = 'New User';
+      document.getElementById('userUsername').value = '';
+      document.getElementById('userUsername').disabled = false;
+      document.getElementById('userDisplayName').value = '';
+      document.getElementById('userEmail').value = '';
+      document.getElementById('userRole').value = 'tech';
+      document.getElementById('userPassword').value = '';
+      document.getElementById('userActive').value = 'true';
+      document.getElementById('passwordRow').style.display = '';
+      document.getElementById('userModalResetRow').style.display = 'none';
+      document.getElementById('userModal').style.display = 'flex';
+    }
+
+    function openEditUser(u) {
+      editingUserId = u.id;
+      document.getElementById('userModalTitle').textContent = 'Edit User';
+      document.getElementById('userUsername').value = u.username;
+      document.getElementById('userUsername').disabled = true;
+      document.getElementById('userDisplayName').value = u.display_name || '';
+      document.getElementById('userEmail').value = u.email || '';
+      document.getElementById('userRole').value = u.role;
+      document.getElementById('userPassword').value = '';
+      document.getElementById('userActive').value = u.active ? 'true' : 'false';
+      document.getElementById('passwordRow').style.display = 'none';
+      document.getElementById('userModalResetRow').style.display = '';
+      document.getElementById('userModal').style.display = 'flex';
+    }
+
+    async function saveUser() {
+      const payload = {
+        username: document.getElementById('userUsername').value.trim(),
+        display_name: document.getElementById('userDisplayName').value.trim(),
+        email: document.getElementById('userEmail').value.trim() || null,
+        role: document.getElementById('userRole').value,
+        active: document.getElementById('userActive').value === 'true'
+      };
+
+      try {
+        if (!editingUserId) {
+          const password = document.getElementById('userPassword').value;
+          if (!password) {
+            alert('Password is required for new users.');
+            return;
+          }
+          payload.password = password;
+          const created = await fetchJSON('/api/users', {
+            method: 'POST',
+            body: JSON.stringify(payload)
+          });
+          users.push(created);
+        } else {
+          const updated = await fetchJSON(`/api/users/${editingUserId}`, {
+            method: 'PATCH',
+            body: JSON.stringify(payload)
+          });
+          const idx = users.findIndex(u => u.id === editingUserId);
+          if (idx !== -1) users[idx] = updated;
+        }
+
+        document.getElementById('userModal').style.display = 'none';
+        renderUsers();
+        await loadRelations(); // keep relationship selectors up to date
+      } catch (err) {
+        console.error(err);
+        alert('Error saving user: ' + err.message);
+      }
+    }
+
+    async function resetPassword(u) {
+      const pwd = prompt(`Enter new password for ${u.username}:`);
+      if (!pwd) return;
+      try {
+        await fetchJSON(`/api/users/${u.id}/reset-password`, {
+          method: 'POST',
+          body: JSON.stringify({ password: pwd })
+        });
+        alert('Password reset.');
+      } catch (err) {
+        console.error(err);
+        alert('Error resetting password: ' + err.message);
+      }
+    }
+
+    // --- Relationships UI --------------------------------
+
+    function renderRelations() {
+      if (!relations) return;
+      const supervisors = relations.users.filter(u => u.role === 'supervisor');
+      const managers = relations.users.filter(u => u.role === 'manager');
+      const techs = relations.users.filter(u => u.role === 'tech');
+
+      const supervisorSelect = document.getElementById('supervisorSelect');
+      supervisorSelect.innerHTML = '';
+      supervisors.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = `${s.username} (${s.display_name})`;
+        supervisorSelect.appendChild(opt);
+      });
+
+      const managerSelect = document.getElementById('managerSelect');
+      managerSelect.innerHTML = '';
+      managers.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.id;
+        opt.textContent = `${m.username} (${m.display_name})`;
+        managerSelect.appendChild(opt);
+      });
+
+      // render listboxes for currently selected supervisor/manager
+      updateSupervisorTechsList();
+      updateManagerSupersList();
+    }
+
+    function toggleListItem(el) {
+      el.classList.toggle('selected');
+    }
+
+    function updateSupervisorTechsList() {
+      const box = document.getElementById('supervisorTechsList');
+      box.innerHTML = '';
+      if (!relations) return;
+
+      const supId = Number(document.getElementById('supervisorSelect').value);
+      if (!supId) return;
+
+      const techs = relations.users.filter(u => u.role === 'tech');
+      const assigned = new Set(
+        relations.supervisorTechs
+          .filter(st => st.supervisor_id === supId)
+          .map(st => st.tech_id)
+      );
+
+      techs.forEach(t => {
+        const div = document.createElement('div');
+        div.className = 'listbox-item' + (assigned.has(t.id) ? ' selected' : '');
+        div.dataset.id = t.id;
+        div.textContent = `${t.username} (${t.display_name})`;
+        div.onclick = () => toggleListItem(div);
+        box.appendChild(div);
+      });
+    }
+
+    function updateManagerSupersList() {
+      const box = document.getElementById('managerSupersList');
+      box.innerHTML = '';
+      if (!relations) return;
+
+      const mgrId = Number(document.getElementById('managerSelect').value);
+      if (!mgrId) return;
+
+      const supervisors = relations.users.filter(u => u.role === 'supervisor');
+      const assigned = new Set(
+        relations.managerSupervisors
+          .filter(ms => ms.manager_id === mgrId)
+          .map(ms => ms.supervisor_id)
+      );
+
+      supervisors.forEach(s => {
+        const div = document.createElement('div');
+        div.className = 'listbox-item' + (assigned.has(s.id) ? ' selected' : '');
+        div.dataset.id = s.id;
+        div.textContent = `${s.username} (${s.display_name})`;
+        div.onclick = () => toggleListItem(div);
+        box.appendChild(div);
+      });
+    }
+
+    async function saveSupervisorTechs() {
+      const supId = Number(document.getElementById('supervisorSelect').value);
+      if (!supId) return;
+
+      const box = document.getElementById('supervisorTechsList');
+      const selected = Array.from(box.querySelectorAll('.listbox-item.selected'))
+        .map(el => Number(el.dataset.id));
+
+      try {
+        await fetchJSON(`/api/supervisor-techs/${supId}`, {
+          method: 'POST',
+          body: JSON.stringify({ techIds: selected })
+        });
+        // update local relations
+        relations.supervisorTechs = relations.supervisorTechs.filter(st => st.supervisor_id !== supId);
+        selected.forEach(tid => {
+          relations.supervisorTechs.push({ supervisor_id: supId, tech_id: tid });
+        });
+        alert('Supervisor/Tech mapping saved.');
+      } catch (err) {
+        console.error(err);
+        alert('Error saving mapping: ' + err.message);
+      }
+    }
+
+    async function saveManagerSupers() {
+      const mgrId = Number(document.getElementById('managerSelect').value);
+      if (!mgrId) return;
+
+      const box = document.getElementById('managerSupersList');
+      const selected = Array.from(box.querySelectorAll('.listbox-item.selected'))
+        .map(el => Number(el.dataset.id));
+
+      try {
+        await fetchJSON(`/api/manager-supervisors/${mgrId}`, {
+          method: 'POST',
+          body: JSON.stringify({ supervisorIds: selected })
+        });
+        relations.managerSupervisors = relations.managerSupervisors.filter(ms => ms.manager_id !== mgrId);
+        selected.forEach(sid => {
+          relations.managerSupervisors.push({ manager_id: mgrId, supervisor_id: sid });
+        });
+        alert('Manager/Supervisor mapping saved.');
+      } catch (err) {
+        console.error(err);
+        alert('Error saving mapping: ' + err.message);
+      }
+    }
+
+    async function loadUsers() {
+      users = await fetchJSON('/api/users');
+      renderUsers();
+    }
+
+    async function loadRelations() {
+      relations = await fetchJSON('/api/user-relations');
+      renderRelations();
+    }
+
+    function wireEvents() {
+      document.getElementById('filterRole').addEventListener('change', renderUsers);
+      document.getElementById('btnNewUser').addEventListener('click', openNewUser);
+      document.getElementById('userModalCancel').addEventListener('click', () => {
+        document.getElementById('userModal').style.display = 'none';
+      });
+      document.getElementById('userModalSave').addEventListener('click', saveUser);
+
+      document.getElementById('supervisorSelect').addEventListener('change', updateSupervisorTechsList);
+      document.getElementById('managerSelect').addEventListener('change', updateManagerSupersList);
+      document.getElementById('btnSaveSupervisorTechs').addEventListener('click', saveSupervisorTechs);
+      document.getElementById('btnSaveManagerSupers').addEventListener('click', saveManagerSupers);
+    }
+
+    (async function init() {
+      try {
+        wireEvents();
+        await loadUsers();
+        await loadRelations();
+      } catch (err) {
+        console.error(err);
+        alert('Error loading Users & Roles page: ' + err.message);
+      }
+    })();
+  </script>
+</body>
+</html>

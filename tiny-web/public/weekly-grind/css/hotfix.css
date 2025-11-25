@@ -1,0 +1,6 @@
+/* Weekly Grind hotfix: scrub visual ghosts */
+.wg-is-empty::before,.wg-is-empty::after,
+.wg-visual-empty::before,.wg-visual-empty::after { content: none !important; }
+.wg-is-empty:not(td):not(th):not(tr):not(table),
+.wg-visual-empty { background: none !important; border: 0 !important; box-shadow: none !important; }
+.wg-visual-empty { display: none !important; }

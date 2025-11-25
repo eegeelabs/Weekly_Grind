@@ -1,0 +1,98 @@
+// view-compact-fix.js — v2
+(() => {
+  if (window.__VIEW_COMPACT_FIX_V2__) return;
+  window.__VIEW_COMPACT_FIX_V2__ = true;
+
+  const css = `
+    .wg-is-empty { display: none !important; }
+    ul.wg-empty, ol.wg-empty { display:none !important; }
+    .wg-compact-list { list-style: none; padding-left: 0; margin-left: 0; }
+    .wg-collapsed-br br + br { display: none; }
+  `;
+  const styleId = "wg-view-compact-style";
+  if (!document.getElementById(styleId)) {
+    const s = document.createElement("style");
+    s.id = styleId;
+    s.textContent = css;
+    document.head.appendChild(s);
+  }
+
+  const ZERO_WIDTH = /[\u200B-\u200D\u2060]/g;
+  const NBSP = /\u00A0/g;
+  const DOTS = /^[\u2022\u00B7•·.\-–—]{1,2}$/;
+  const ONLY_PUNCT = /^[\s,;:!?'"]*$/;
+
+  const cleanText = (s) =>
+    (s || "").replace(ZERO_WIDTH, "").replace(NBSP, " ").replace(/\s+/g, " ").trim();
+
+  const isEmptyishText = (s) => {
+    const t = cleanText(s);
+    return !t || DOTS.test(t) || ONLY_PUNCT.test(t);
+  };
+
+  const collapseBrRuns = (root) => {
+    root.querySelectorAll("p, td, th, li, div, section").forEach((el) => {
+      const html = (el.innerHTML || "").replace(/\s+/g, " ").trim();
+      if (/^(<br\s*\/?>\s*){2,}$/i.test(html)) el.innerHTML = "<br>";
+      el.classList.add("wg-collapsed-br");
+    });
+  };
+
+  const pruneEmpties = (root) => {
+    const container = root || document;
+
+    container.querySelectorAll("td, th").forEach((cell) => {
+      if (cell.querySelector("img, svg")) return;
+      cell.classList.toggle("wg-is-empty", isEmptyishText(cell.textContent));
+    });
+
+    container.querySelectorAll("ul, ol").forEach((list) => {
+      let kept = 0;
+      list.classList.add("wg-compact-list");
+      list.querySelectorAll("li").forEach((li) => {
+        const hasMedia = li.querySelector("img, svg");
+        const txt = cleanText(li.textContent);
+        const emptyish = !hasMedia && isEmptyishText(txt);
+        li.classList.toggle("wg-is-empty", emptyish);
+        if (!emptyish) kept++;
+      });
+      list.classList.toggle("wg-empty", kept === 0);
+    });
+
+    container.querySelectorAll("p, .cell, .value, .field, .wg-text").forEach((el) => {
+      if (el.querySelector("img, svg")) return;
+      el.classList.toggle("wg-is-empty", isEmptyishText(el.textContent));
+    });
+
+    collapseBrRuns(container);
+  };
+
+  const ready = () =>
+    document.readyState === "complete" || document.readyState === "interactive";
+  const runNowOrLater = (fn) =>
+    ready() ? fn() : document.addEventListener("DOMContentLoaded", fn);
+  runNowOrLater(() => pruneEmpties(document));
+
+  const target =
+    document.getElementById("wg-view") ||
+    document.getElementById("grid") ||
+    document.body;
+
+  const mo = new MutationObserver((muts) => {
+    const seen = new Set();
+    muts.forEach((m) => {
+      const scope =
+        (m.target && (m.target.closest?.("table, ul, ol, #wg-view, #grid") || m.target)) ||
+        target;
+      if (!seen.has(scope)) {
+        pruneEmpties(scope);
+        seen.add(scope);
+      }
+    });
+  });
+
+  mo.observe(target, { childList: true, subtree: true, characterData: true });
+
+  window.addEventListener("csv:loaded", () => pruneEmpties(document));
+  window.addEventListener("csv:rendered", () => pruneEmpties(document));
+})();

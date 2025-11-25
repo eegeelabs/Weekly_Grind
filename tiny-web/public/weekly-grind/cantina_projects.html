@@ -1,0 +1,366 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Weekly Grind – Projects</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 1rem 1.5rem 2rem;
+      background: #0b1120;
+      color: #e5e7eb;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 1.6rem;
+      margin: 0;
+    }
+    .meta {
+      font-size: 0.85rem;
+      color: #9ca3af;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+    .controls input,
+    .controls select {
+      background: #020617;
+      border: 1px solid #1f2937;
+      color: #e5e7eb;
+      padding: 0.35rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.9rem;
+    }
+    .controls label {
+      font-size: 0.8rem;
+      color: #9ca3af;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    thead {
+      position: sticky;
+      top: 0;
+      background: #020617;
+      z-index: 1;
+    }
+    th, td {
+      padding: 0.35rem 0.5rem;
+      border-bottom: 1px solid #111827;
+      text-align: left;
+      white-space: nowrap;
+    }
+    th {
+      font-weight: 600;
+      color: #9ca3af;
+      cursor: pointer;
+    }
+    tr:nth-child(even) td {
+      background: #020617;
+    }
+    tr:nth-child(odd) td {
+      background: #020617;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.45rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid #1f2937;
+    }
+    .status-open { background: rgba(34,197,94,0.08); border-color: #16a34a; color: #bbf7d0; }
+    .status-on_hold { background: rgba(234,179,8,0.08); border-color: #eab308; color: #facc15; }
+    .status-complete { background: rgba(59,130,246,0.08); border-color: #3b82f6; color: #bfdbfe; }
+    .status-cancelled { background: rgba(148,163,184,0.08); border-color: #6b7280; color: #e5e7eb; }
+
+    .risk-low { color: #22c55e; }
+    .risk-medium { color: #eab308; }
+    .risk-high { color: #f97316; }
+    .risk-critical { color: #ef4444; }
+
+    .tag {
+      font-size: 0.7rem;
+      border-radius: 999px;
+      padding: 0.08rem 0.4rem;
+      border: 1px solid #1f2937;
+    }
+    .tag-hot { border-color: #ef4444; color: #fecaca; }
+    .tag-warm { border-color: #eab308; color: #fef3c7; }
+    .tag-cool { border-color: #22c55e; color: #bbf7d0; }
+
+    .pill {
+      padding: 0.08rem 0.35rem;
+      border-radius: 999px;
+      border: 1px solid #1f2937;
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+
+    .table-container {
+      border-radius: 0.5rem;
+      border: 1px solid #111827;
+      overflow: auto;
+      max-height: calc(100vh - 150px);
+      background: #020617;
+    }
+
+    .error {
+      color: #fecaca;
+      background: rgba(248,113,113,0.1);
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.5rem;
+      border: 1px solid #fecaca33;
+      margin-bottom: 0.75rem;
+      font-size: 0.8rem;
+    }
+    .loading {
+      font-size: 0.85rem;
+      color: #9ca3af;
+      margin-bottom: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+ <header>
+  <div>
+    <h1>Weekly Grind - Projects</h1>
+    <div class="meta" id="meta-summary">Loading projects�</div>
+  </div>
+  <div class="meta">
+    <a href="/weekly-grind/admin" style="color:#93c5fd;text-decoration:none;margin-right:1rem;">← Back to Schedule</a>
+    <a href="/weekly-grind/projects/new" style="color:#bbf7d0;text-decoration:none;">+ New Project</a>
+  </div>
+</header>
+
+  <div class="controls">
+    <label>
+      Search:
+      <input type="text" id="searchBox" placeholder="PID, client, name…" />
+    </label>
+    <label>
+      Status:
+      <select id="statusFilter">
+        <option value="">All</option>
+        <option value="open">Open</option>
+        <option value="on_hold">On Hold</option>
+        <option value="complete">Complete</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </label>
+  </div>
+
+  <div id="messages"></div>
+
+  <div class="table-container">
+    <table id="projectsTable">
+      <thead>
+        <tr>
+          <th data-sort="pid">PID</th>
+          <th data-sort="client_id">Client</th>
+          <th data-sort="project_name">Project</th>
+          <th data-sort="status">Status</th>
+          <th data-sort="days_open">Days Open</th>
+          <th data-sort="days_past_config_goal">Cfg Δ</th>
+          <th data-sort="days_past_project_goal">Proj Δ</th>
+          <th data-sort="customer_temp">Temp</th>
+          <th data-sort="date_project_opened">Opened</th>
+          <th data-sort="date_hardware_received">HW Recv</th>
+          <th data-sort="date_last_contacted">Last Contact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- rows injected by JS -->
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    const apiUrl = '/api/projects';
+    let allProjects = [];
+    let currentSort = { key: 'date_project_opened', dir: 'desc' };
+
+    function fmtDate(d) {
+      if (!d) return '';
+      // assume ISO string or date-only; just slice
+      return String(d).slice(0, 10);
+    }
+
+    function statusClass(status) {
+      if (!status) return 'status-pill';
+      const s = status.toLowerCase();
+      if (s === 'open') return 'status-pill status-open';
+      if (s === 'on_hold' || s === 'on hold') return 'status-pill status-on_hold';
+      if (s === 'complete' || s === 'completed') return 'status-pill status-complete';
+      if (s === 'cancelled' || s === 'canceled') return 'status-pill status-cancelled';
+      return 'status-pill';
+    }
+
+    function tempTag(temp) {
+      if (temp == null) return '';
+      const t = Number(temp);
+      let cls = 'tag', label = t;
+      if (t >= 4) cls += ' tag-hot';
+      else if (t === 3) cls += ' tag-warm';
+      else cls += ' tag-cool';
+      return '<span class="' + cls + '">Temp ' + label + '</span>';
+    }
+
+    function riskClass(daysPastGoal) {
+      if (daysPastGoal == null) return '';
+      const v = Number(daysPastGoal);
+      if (isNaN(v)) return '';
+      if (v <= 0) return 'risk-low';
+      if (v <= 7) return 'risk-medium';
+      if (v <= 21) return 'risk-high';
+      return 'risk-critical';
+    }
+
+    function updateMeta(filteredCount) {
+      const meta = document.getElementById('meta-summary');
+      const total = allProjects.length;
+      if (!total) {
+        meta.textContent = 'No projects found.';
+        return;
+      }
+      const openCount = allProjects.filter(p => (p.status || '').toLowerCase() === 'open').length;
+      meta.textContent = filteredCount === total
+        ? total + ' projects (' + openCount + ' open)'
+        : filteredCount + ' of ' + total + ' projects shown (' + openCount + ' open)';
+    }
+
+    function renderTable() {
+      const tbody = document.querySelector('#projectsTable tbody');
+      const search = document.getElementById('searchBox').value.toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+
+      let rows = allProjects.slice();
+
+      // filter
+      rows = rows.filter(p => {
+        if (statusFilter && (p.status || '').toLowerCase() !== statusFilter) return false;
+        if (search) {
+          const blob = [
+            p.pid,
+            p.client_id,
+            p.project_name,
+            p.status
+          ].join(' ').toLowerCase();
+          if (!blob.includes(search)) return false;
+        }
+        return true;
+      });
+
+      // sort
+      const { key, dir } = currentSort;
+      rows.sort((a, b) => {
+        const va = a[key];
+        const vb = b[key];
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1;
+        if (vb == null) return -1;
+
+        // numeric sort when both are numeric
+        const na = Number(va), nb = Number(vb);
+        if (!Number.isNaN(na) && !Number.isNaN(nb)) {
+          return dir === 'asc' ? na - nb : nb - na;
+        }
+
+        const sa = String(va);
+        const sb = String(vb);
+        if (sa < sb) return dir === 'asc' ? -1 : 1;
+        if (sa > sb) return dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+
+      // render
+      tbody.innerHTML = rows.map(p => {
+        const cfgRisk = riskClass(p.days_past_config_goal);
+        const projRisk = riskClass(p.days_past_project_goal);
+        return `
+          <tr>
+            <td>
+  		<a href="/weekly-grind/projects/${encodeURIComponent(p.pid || '')}/edit"
+     		style="color:#93c5fd;text-decoration:none;">
+    		<code>${p.pid || ''}</code>
+  		</a>
+	    </td>
+            <td>${p.client_id || ''}</td>
+            <td>${p.project_name || ''}</td>
+            <td><span class="${statusClass(p.status)}">${p.status || 'n/a'}</span></td>
+            <td>${p.days_open != null ? p.days_open : ''}</td>
+            <td class="${cfgRisk}">${p.days_past_config_goal != null ? p.days_past_config_goal : ''}</td>
+            <td class="${projRisk}">${p.days_past_project_goal != null ? p.days_past_project_goal : ''}</td>
+            <td>${tempTag(p.customer_temp)}</td>
+            <td>${fmtDate(p.date_project_opened)}</td>
+            <td>${fmtDate(p.date_hardware_received)}</td>
+            <td>${fmtDate(p.date_last_contacted)}</td>
+          </tr>
+        `;
+      }).join('');
+
+      updateMeta(rows.length);
+    }
+
+    function attachSortHandlers() {
+      document.querySelectorAll('#projectsTable thead th[data-sort]').forEach(th => {
+        th.addEventListener('click', () => {
+          const key = th.getAttribute('data-sort');
+          if (currentSort.key === key) {
+            currentSort.dir = currentSort.dir === 'asc' ? 'desc' : 'asc';
+          } else {
+            currentSort.key = key;
+            currentSort.dir = 'asc';
+          }
+          renderTable();
+        });
+      });
+    }
+
+    async function loadProjects() {
+      const messages = document.getElementById('messages');
+      messages.innerHTML = '<div class="loading">Loading projects from server…</div>';
+      try {
+        const res = await fetch(apiUrl, { headers: { 'Accept': 'application/json' } });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        allProjects = await res.json();
+        attachSortHandlers();
+        messages.innerHTML = '';
+        renderTable();
+      } catch (err) {
+        console.error('Failed to load projects', err);
+        messages.innerHTML = '<div class="error">Failed to load projects. ' +
+          'Check the backend logs or try again.</div>';
+      }
+    }
+
+    function attachFilters() {
+      document.getElementById('searchBox').addEventListener('input', () => renderTable());
+      document.getElementById('statusFilter').addEventListener('change', () => renderTable());
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      attachFilters();
+      loadProjects();
+    });
+  </script>
+</body>
+</html>
