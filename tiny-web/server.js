@@ -32,28 +32,12 @@ app.use(
   })
 );
 
-// ===== TEMP DEV AUTH STUB =====
-// Until real auth is wired into the UI, pretend every request is a logged-in admin
-// if there is no existing session user.
-app.use((req, _res, next) => {
-  if (!req.session.user && !req.user) {
-    req.user = {
-      id: 1,
-      username: 'dev-admin',
-      role: 'admin',
-    };
-    console.log('Stub user applied', req.user, req.path);
-  }
-  next();
-});
-// ===== END TEMP DEV AUTH STUB =====
-
 // -----------------------------------------------------------------------------
-// Auth helpers (session + stub user)
+// Auth helpers (session-based)
 // -----------------------------------------------------------------------------
 
 function getCurrentUser(req) {
-  return req.session?.user || req.user || null;
+  return req.session?.user || null;
 }
 
 function requireAuth(req, res, next) {
@@ -693,7 +677,7 @@ app.post(
 );
 
 // -----------------------------------------------------------------------------
-// WEEKLY GRIND SCHEDULE – DB-ONLY CSV STORAGE
+// WEEKLY GRIND SCHEDULE - DB-ONLY CSV STORAGE
 // -----------------------------------------------------------------------------
 
 const PUB_DIR = path.join(__dirname, 'public');
@@ -778,7 +762,7 @@ app.get('/weekly-grind/cantina-schedule-:monday.csv', async (req, res) => {
 });
 
 // Save schedule from Admin (DB-backed)
-app.post('/weekly-grind/api/save', async (req, res) => {
+app.post('/weekly-grind/api/save', requireRole('admin', 'coordinator'), async (req, res) => {
   try {
     const { mondayISO, csv } = req.body || {};
     if (!isISO(mondayISO) || typeof csv !== 'string') {
@@ -796,8 +780,8 @@ app.post('/weekly-grind/api/save', async (req, res) => {
 });
 
 // Simple auth check used by frontend
-app.get('/weekly-grind/api/auth-check', (_req, res) =>
-  res.json({ ok: true })
+app.get('/weekly-grind/api/auth-check', requireAuth, (req, res) =>
+  res.json({ ok: true, user: req.user })
 );
 
 // -----------------------------------------------------------------------------
