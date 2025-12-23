@@ -2,8 +2,54 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Initiatives – Under Construction</title>
+  <title>Initiatives ï¿½ Under Construction</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="/weekly-grind/js/auth-check.js">
+    // Load user info and avatars
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          const displayName = user.display_name || user.username;
+          const avatar = user.avatar || 'ðŸ‘¤';
+          const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          const fullName = displayName + ' (' + role + ')';
+          
+          // Update avatar (small icon only)
+          const smallAvatar = document.getElementById('smallAvatar');
+          if (smallAvatar) smallAvatar.textContent = avatar;
+          
+          // Update username (right side only)
+          const userInfoRight = document.getElementById('userInfoRight');
+          if (userInfoRight) userInfoRight.textContent = fullName;
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch('/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        window.location.href = '/weekly-grind/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/weekly-grind/login';
+      }
+    }
+
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadUserInfo);
+    } else {
+      loadUserInfo();
+    }
+
+  </script>
 
   <style>
     body {
@@ -47,19 +93,117 @@
     .btn:hover {
       opacity: 0.8;
     }
+  
+    /* Unified Header - Everything in One Section */
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    /* Profile Section - Far Right */
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-text {
+      font-size: 1rem;
+      color: #94a3b8;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+        .profile-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    
+
+    
+
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    .logout-btn:hover {
+      background: #5a6778;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
   </style>
 </head>
 
 <body>
-  <h1>Initiatives – Coming Soon</h1>
+  <h1>Initiatives ï¿½ Coming Soon</h1>
 
   <p>
     This section of the Weekly Grind is still being built.
-    Soon you’ll be able to manage organizational initiatives, track progress,
+    Soon youï¿½ll be able to manage organizational initiatives, track progress,
     and link tasks across projects.  
     For now, this page is just holding space while development continues.
   </p>
 
   <a class="btn" href="/weekly-grind/admin">Back to Admin</a>
 </body>
-</html>
+</

@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Weekly Grind – New Project</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="/weekly-grind/js/auth-check.js"></script>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -35,7 +36,7 @@
       max-width: 900px;
       border-radius: 0.75rem;
       border: 1px solid #111827;
-      background: #020617;
+      background: #0b1120;
       padding: 1rem 1.25rem 1.5rem;
     }
     .form-grid {
@@ -59,7 +60,7 @@ label {
 }
 
 input, select, textarea {
-  background: #020617;
+  background: #0b1120;
   border: 1px solid #1f2937;
   color: #e5e7eb;
   padding: 0.3rem 0.45rem;
@@ -105,16 +106,197 @@ input, select, textarea {
     .required {
       color: #f97316;
     }
+  
+    /* Unified Header - Everything in One Section */
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    /* Profile Section - Far Right */
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-text {
+      font-size: 1rem;
+      color: #94a3b8;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+        .profile-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    
+
+    
+
+    
+    .btn {
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .btn-secondary:hover {
+      background: #1f2937;
+      border-color: var(--accent);
+    }
+
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    .logout-btn:hover {
+      background: #5a6778;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+  
+    /* Unified Navigation Styles */
+    .wg-main-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .wg-nav-link {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #2a3a52;
+      background: #1a2332;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .wg-nav-link:hover {
+      border-color: #4f46e5;
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .wg-nav-link.active {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #fff;
+      font-weight: 500;
+    }
+
   </style>
 </head>
 <body>
   <header>
-    <div>
-      <h1>New Project</h1>
-      <div class="meta">Create or update a project (PID comes from the other system).</div>
-    </div>
-    <div class="meta">
-      <a href="/weekly-grind/projects" class="link">← Back to Projects</a>
+    <div class="unified-header">
+      <div class="header-content">
+        <div class="header-row">
+          <strong class="header-title">New Project</strong>
+        </div>
+        
+        <div class="header-row">
+          <nav class="wg-main-nav">
+            <a href="/weekly-grind/view" class="wg-nav-link">Schedule View</a>
+            <a href="/weekly-grind/projects" class="wg-nav-link active">Projects</a>
+            <a href="/weekly-grind/repair-reimage" class="wg-nav-link">Repair & Reimage</a>
+            <a href="/weekly-grind/decom-checkin" class="wg-nav-link">Equipment Check-In</a>
+            <a href="/weekly-grind/scheduling" class="wg-nav-link">Scheduling</a>
+            <a href="/weekly-grind/supervisor-dashboard" class="wg-nav-link dashboard-link" data-roles="supervisor">Supervisor Dashboard</a>
+            <a href="/weekly-grind/manager-dashboard" class="wg-nav-link dashboard-link" data-roles="manager">Manager Dashboard</a>
+            <a href="/weekly-grind/admin-options" class="wg-nav-link admin-link">Admin Options</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <span class="user-info-text" id="userInfoRight">Loading...</span>
+        <div class="small-profile-icon" id="smallAvatar">👤</div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
     </div>
   </header>
 
@@ -148,7 +330,7 @@ input, select, textarea {
         </label>
    	<label>
   	  <span class="field-label">Date Opened<span class="required">*</span></span>
-  	  <input type="date" name="date_project_opened" required />
+  	  <input type="date" id="date_project_opened" name="date_project_opened" required />
 	</label>
         <label>
           HW Received
@@ -158,17 +340,23 @@ input, select, textarea {
           HW ETA
           <input type="date" name="hardware_eta" />
         </label>
-        <label>
-          HW Desktops
-          <input type="number" name="num_desktops" min="0" />
-        </label>
-        <label>
-          HW Laptops
-          <input type="number" name="num_laptops" min="0" />
-        </label>
+        <div style="display: flex; gap: 0.75rem; grid-column: span 2;">
+          <label style="flex: 1;">
+            # Desktops
+            <input type="number" name="num_desktops" min="0" />
+          </label>
+          <label style="flex: 1;">
+            # Laptops
+            <input type="number" name="num_laptops" min="0" />
+          </label>
+        </div>
         <label>
           # Images
           <input type="number" name="num_images" min="0" />
+        </label>
+        <label style="display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 0.5rem;">
+          <input type="checkbox" id="bypass" name="bypass" style="width: auto; margin: 0;">
+          <span>Bypass</span>
         </label>
         <label>
           Onsite / Ship
@@ -268,9 +456,9 @@ input, select, textarea {
         client_id: valOrNull('client_id'),
         project_name,
         description: valOrNull('description'),
-        num_desktops: valOrNull('num_desktops'),
-        num_laptops: valOrNull('num_laptops'),
-        num_images: valOrNull('num_images'),
+        num_desktops: valOrNull('num_desktops') ? Number(valOrNull('num_desktops')) : null,
+        num_laptops: valOrNull('num_laptops') ? Number(valOrNull('num_laptops')) : null,
+        num_images: valOrNull('num_images') ? Number(valOrNull('num_images')) : null,
         onsite_or_ship: valOrNull('onsite_or_ship'),
         onsite_scheduled: (() => {
           const v = val('onsite_scheduled');
@@ -286,6 +474,7 @@ input, select, textarea {
         contact_method: valOrNull('contact_method'),
         customer_temp: valOrNull('customer_temp'),
         status: valOrNull('status') || 'open',
+        bypass: document.getElementById('bypass')?.checked || false,
         notes: valOrNull('notes')
       };
 
@@ -322,6 +511,98 @@ input, select, textarea {
         submitBtn.disabled = false;
       }
     });
+  
+    // Load user info and avatars
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          const displayName = user.display_name || user.username;
+          const avatar = user.avatar || '👤';
+          const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          const fullName = displayName + ' (' + role + ')';
+          
+          // Update avatar (small icon only)
+          const smallAvatar = document.getElementById('smallAvatar');
+          if (smallAvatar) smallAvatar.textContent = avatar;
+          
+          // Update username (right side only)
+          const userInfoRight = document.getElementById('userInfoRight');
+          if (userInfoRight) userInfoRight.textContent = fullName;
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch('/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        window.location.href = '/weekly-grind/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/weekly-grind/login';
+      }
+    }
+
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadUserInfo);
+    } else {
+      loadUserInfo();
+    }
+
+  
+    // Filter navigation based on user role
+    async function filterNavigation() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          
+          // Hide dashboard links not for this role
+          document.querySelectorAll('.dashboard-link').forEach(link => {
+            const roles = link.getAttribute('data-roles');
+            if (roles && !roles.includes(user.role)) {
+              link.style.display = 'none';
+            }
+          });
+          
+          // Hide admin options if not admin
+          if (!user.is_admin) {
+            document.querySelectorAll('.admin-link').forEach(link => {
+              link.style.display = 'none';
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error filtering navigation:', error);
+      }
+    }
+    
+    // Run after page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', filterNavigation);
+      
+      // Set default date to today
+      document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('date_project_opened');
+        if (dateInput && !dateInput.value) {
+          const today = new Date();
+          const yyyy = today.getFullYear();
+          const mm = String(today.getMonth() + 1).padStart(2, '0');
+          const dd = String(today.getDate()).padStart(2, '0');
+          dateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+      });
+    } else {
+      filterNavigation();
+    }
+
   </script>
 </body>
 </html>

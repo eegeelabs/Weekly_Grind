@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Decommissioning Check-In | Weekly Grind</title>
+    <style>
+        :root {
+            --bg: #0b1120;
+            --panel: #111827;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --line: #1f2937;
+            --accent: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Unified Header */
+        header {
+            background: #1a2332;
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid #2a3a52;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .unified-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .header-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin: 0;
+        }
+
+        .wg-main-nav {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .wg-nav-link {
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid #2a3a52;
+            background: #1a2332;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .wg-nav-link:hover {
+            border-color: var(--accent);
+            background: #111827;
+            color: #e5e7eb;
+        }
+
+        .wg-nav-link.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .user-info-text {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .small-profile-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .logout-btn {
+            background: #4a5568;
+            color: #e5e7eb;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover { background: #5a6578; }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .page-intro {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .page-intro h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .page-intro p {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .scanner-container {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .scanner-status {
+            background: var(--success);
+            color: white;
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .scanner-status.scanning {
+            background: var(--warning);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .form-container {
+            padding: 2rem;
+        }
+
+        .scan-instruction {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 4px solid #3b82f6;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            border-radius: 4px;
+            color: var(--text);
+        }
+
+        .scan-instruction strong {
+            color: #3b82f6;
+        }
+
+        .scan-instruction.active {
+            background: rgba(245, 158, 11, 0.1);
+            border-left-color: var(--warning);
+            animation: highlight 0.5s;
+        }
+
+        .scan-instruction.active strong {
+            color: var(--warning);
+        }
+
+        @keyframes highlight {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(31, 41, 55, 0.5);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+        }
+
+        .form-section h3 {
+            color: var(--accent);
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--accent);
+            font-size: 1.1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .form-group label .required {
+            color: var(--danger);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .form-group input.scan-ready {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .form-group input.scanned {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .drives-section {
+            background: var(--bg);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+        }
+
+        .drive-entry {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            padding: 1rem;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            position: relative;
+        }
+
+        .drive-entry input {
+            padding: 0.75rem;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            width: 100%;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .drive-entry .drive-serial {
+            grid-column: 1 / -1;
+        }
+
+        .drive-entry .btn-remove-drive {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            border-radius: 50%;
+            font-size: 16px;
+            line-height: 1;
+            background: var(--danger);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drive-entry .btn-remove-drive:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn-add {
+            background: #3b82f6;
+            color: white;
+            width: 100%;
+            margin-top: 0.75rem;
+        }
+
+        .btn-add:hover {
+            background: #2563eb;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 2px solid var(--line);
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--success);
+            display: none;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--danger);
+            display: none;
+        }
+
+        .scan-icon {
+            font-size: 1.2rem;
+            margin-right: 0.5rem;
+        }
+
+        .hold-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-top: 1rem;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="unified-header">
+            <div class="header-content">
+                <div class="header-row">
+                    <strong class="header-title">Decommissioning Check-In</strong>
+                </div>
+                <div class="header-row">
+                    <nav class="wg-main-nav" id="mainNav">
+                        <a href="/weekly-grind/decom-checkin" class="wg-nav-link active">Equipment Check-In</a>
+                        <a href="/weekly-grind/decom-inventory" class="wg-nav-link">Inventory Management</a>
+                        <a href="/weekly-grind/decom-destruction" class="wg-nav-link">Destruction Tracking</a>
+                        <a href="/weekly-grind/decom-reports" class="wg-nav-link">Reports</a>
+                    </nav>
+                </div>
+            </div>
+            <div class="profile-section">
+                <span class="user-info-text" id="userInfoRight">Loading...</span>
+                <div class="small-profile-icon" id="smallAvatar">👤</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-intro">
+            <h1>📦 Decommissioning Check-In</h1>
+            <p>Log decommissioned equipment for 30-day hold period before drive destruction and hard drives. 30-day hold period automatically calculated.</p>
+        </div>
+
+        <div class="scanner-container">
+            <div class="scanner-status" id="scannerStatus">
+                <span class="scan-icon">🔍</span>
+                Ready to Scan
+            </div>
+
+            <div class="form-container">
+                <div class="success-message" id="successMessage"></div>
+                <div class="error-message" id="errorMessage"></div>
+
+                <div class="scan-instruction" id="scanInstruction">
+                    <strong>📍 Current Field:</strong> <span id="currentField">Ticket Number</span><br>
+                    <small>Position cursor in the field above and scan barcode, or type manually</small>
+                </div>
+
+                <form id="checkinForm">
+                    <!-- Ticket & Client Section -->
+                    <div class="form-section">
+                        <h3>Ticket & Client Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="ticketNumber">Ticket Number <span class="required">*</span></label>
+                            <input type="text" id="ticketNumber" required autocomplete="off" 
+                                   placeholder="Scan or type ticket number">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="clientId">Client ID <span class="required">*</span></label>
+                            <input type="text" id="clientId" required autocomplete="off"
+                                   placeholder="Scan or type client ID">
+                        </div>
+                    </div>
+
+                    <!-- Equipment Section -->
+                    <div class="form-section">
+                        <h3>Equipment Information</h3>
+                        
+                        <div class="form-group">
+                            <label for="equipmentName">PC/Server Name</label>
+                            <input type="text" id="equipmentName" autocomplete="off"
+                                   placeholder="e.g., ACME-PC-101">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="equipmentType">Equipment Type</label>
+                            <select id="equipmentType">
+                                <option value="">Select Type</option>
+                                <option value="Desktop">Desktop</option>
+                                <option value="Laptop">Laptop</option>
+                                <option value="Server">Server</option>
+                                <option value="Workstation">Workstation</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="equipmentModel">PC/Server Model</label>
+                            <input type="text" id="equipmentModel" autocomplete="off"
+                                   placeholder="e.g., Dell OptiPlex 7090">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="equipmentSerial">PC/Server Serial Number</label>
+                            <input type="text" id="equipmentSerial" autocomplete="off"
+                                   placeholder="Scan or type serial number">
+                        </div>
+                    </div>
+
+                    <!-- Hard Drives Section -->
+                    <div class="form-section">
+                        <h3>Associated Hard Drives</h3>
+                        <p style="color: var(--muted); margin-bottom: 1rem; font-size: 0.85rem;">
+                            Add all hard drives removed from this equipment
+                        </p>
+
+                        <div class="drives-section">
+                            <div id="drivesContainer">
+                                <div class="drive-entry">
+                                    <input type="text" placeholder="Drive Serial Number" 
+                                           class="drive-serial" autocomplete="off">
+                                    <input type="text" placeholder="Manufacturer (e.g., Western Digital)" 
+                                           class="drive-manufacturer" autocomplete="off">
+                                    <input type="text" placeholder="Model" 
+                                           class="drive-model" autocomplete="off">
+                                    <input type="text" placeholder="Capacity (e.g., 1TB)" 
+                                           class="drive-capacity" autocomplete="off">
+                                    <button type="button" class="btn btn-remove-drive" 
+                                            onclick="removeDrive(this)" style="display:none;" title="Remove Drive">✕</button>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-add" onclick="addDrive()">
+                                + Add Another Drive
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Check-In Details Section -->
+                    <div class="form-section">
+                        <h3>Check-In Details</h3>
+                        
+                        <div class="form-group">
+                            <label for="checkinDate">Check-In Date <span class="required">*</span></label>
+                            <input type="date" id="checkinDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="checkedInBy">Checked In By <span class="required">*</span></label>
+                            <input type="text" id="checkedInBy" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="location">Current Location</label>
+                            <select id="location">
+                                <option value="receiving">Receiving</option>
+                                <option value="warehouse">Warehouse</option>
+                                <option value="processing">Processing</option>
+                                <option value="storage">Storage</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="notes">Notes</label>
+                            <textarea id="notes" rows="3" placeholder="Any additional notes..."></textarea>
+                        </div>
+
+                        <div class="hold-warning">
+                            ⏱️ <strong>30-Day Hold:</strong> Equipment will be held for 30 days from check-in date before 
+                            being eligible for destruction.
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                            Clear Form
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            ✓ Check In Equipment
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let driveCount = 1;
+        let lastFocusedField = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            initializeForm();
+            setupScannerListeners();
+        });
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/auth/me');
+                if (!response.ok) {
+                    window.location.href = '/weekly-grind/login.html';
+                    return;
+                }
+                currentUser = await response.json();
+                
+                // Update user info
+                const displayName = currentUser.display_name || currentUser.username;
+                const avatar = currentUser.avatar || '👤';
+                const role = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+                
+                document.getElementById('smallAvatar').textContent = avatar;
+                document.getElementById('userInfoRight').textContent = `${displayName} (${role})`;
+                
+                // Show role-based navigation
+                if (['coordinator', 'supervisor', 'manager'].includes(currentUser.role) || currentUser.is_admin) {
+                    document.getElementById('schedulingLink').style.display = 'inline-block';
+                }
+                if (currentUser.role === 'supervisor' || currentUser.is_admin) {
+                    document.getElementById('supervisorLink').style.display = 'inline-block';
+                }
+                if (currentUser.role === 'manager' || currentUser.is_admin) {
+                    document.getElementById('managerLink').style.display = 'inline-block';
+                }
+                if (currentUser.is_admin) {
+                    document.getElementById('adminLink').style.display = 'inline-block';
+                }
+                
+                // Set defaults
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('checkinDate').value = today;
+                document.getElementById('checkedInBy').value = displayName;
+            } catch (error) {
+                window.location.href = '/weekly-grind/login.html';
+            }
+        }
+
+        function initializeForm() {
+            const inputs = document.querySelectorAll('input[type="text"]');
+            inputs.forEach((input, index) => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (index < inputs.length - 1) {
+                            inputs[index + 1].focus();
+                        }
+                    }
+                });
+            });
+        }
+
+        function setupScannerListeners() {
+            const allInputs = document.querySelectorAll('input[type="text"], input[type="date"], select');
+            
+            allInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    lastFocusedField = this.id || this.className;
+                    updateScanInstruction(this);
+                    this.classList.add('scan-ready');
+                });
+
+                input.addEventListener('blur', function() {
+                    this.classList.remove('scan-ready');
+                    if (this.value) {
+                        this.classList.add('scanned');
+                    }
+                });
+
+                let scanTimeout;
+                input.addEventListener('input', function() {
+                    const status = document.getElementById('scannerStatus');
+                    status.className = 'scanner-status scanning';
+                    status.innerHTML = '<span class="scan-icon">📡</span> Scanning...';
+                    
+                    clearTimeout(scanTimeout);
+                    scanTimeout = setTimeout(() => {
+                        status.className = 'scanner-status';
+                        status.innerHTML = '<span class="scan-icon">🔍</span> Ready to Scan';
+                        
+                        if (this.value) {
+                            this.classList.add('scanned');
+                            this.classList.remove('scan-ready');
+                        }
+                    }, 300);
+                });
+            });
+        }
+
+        function updateScanInstruction(field) {
+            const instruction = document.getElementById('scanInstruction');
+            const fieldName = document.getElementById('currentField');
+            
+            let name = field.placeholder || field.id || 'Current Field';
+            fieldName.textContent = name;
+            
+            instruction.classList.add('active');
+            setTimeout(() => instruction.classList.remove('active'), 500);
+        }
+
+        function addDrive() {
+            driveCount++;
+            const container = document.getElementById('drivesContainer');
+            const newDrive = document.createElement('div');
+            newDrive.className = 'drive-entry';
+            newDrive.innerHTML = `
+                <input type="text" placeholder="Drive Serial Number" 
+                       class="drive-serial" autocomplete="off">
+                <input type="text" placeholder="Manufacturer (e.g., Western Digital)" 
+                       class="drive-manufacturer" autocomplete="off">
+                <input type="text" placeholder="Model" 
+                       class="drive-model" autocomplete="off">
+                <input type="text" placeholder="Capacity (e.g., 1TB)" 
+                       class="drive-capacity" autocomplete="off">
+                <button type="button" class="btn btn-remove-drive" 
+                        onclick="removeDrive(this)" title="Remove Drive">✕</button>
+            `;
+            container.appendChild(newDrive);
+            
+            updateRemoveButtons();
+            setupScannerListeners();
+            
+            newDrive.querySelector('.drive-serial').focus();
+        }
+
+        function removeDrive(button) {
+            button.closest('.drive-entry').remove();
+            driveCount--;
+            updateRemoveButtons();
+        }
+
+        function updateRemoveButtons() {
+            const drives = document.querySelectorAll('.drive-entry');
+            drives.forEach((drive, index) => {
+                const removeBtn = drive.querySelector('.btn-remove-drive');
+                if (drives.length > 1) {
+                    removeBtn.style.display = 'block';
+                } else {
+                    removeBtn.style.display = 'none';
+                }
+            });
+        }
+
+        function resetForm() {
+            if (confirm('Clear all fields and start over?')) {
+                document.getElementById('checkinForm').reset();
+                
+                const container = document.getElementById('drivesContainer');
+                container.innerHTML = `
+                    <div class="drive-entry">
+                        <input type="text" placeholder="Drive Serial Number" 
+                               class="drive-serial" autocomplete="off">
+                        <input type="text" placeholder="Manufacturer (e.g., Western Digital)" 
+                               class="drive-manufacturer" autocomplete="off">
+                        <input type="text" placeholder="Model" 
+                               class="drive-model" autocomplete="off">
+                        <input type="text" placeholder="Capacity (e.g., 1TB)" 
+                               class="drive-capacity" autocomplete="off">
+                        <button type="button" class="btn btn-remove-drive" 
+                                onclick="removeDrive(this)" style="display:none;" title="Remove Drive">✕</button>
+                    </div>
+                `;
+                driveCount = 1;
+                
+                const today = new Date().toISOString().split('T')[0];
+                document.getElementById('checkinDate').value = today;
+                document.getElementById('checkedInBy').value = currentUser.display_name || currentUser.username;
+                document.getElementById('location').value = 'receiving';
+                
+                document.querySelectorAll('.scanned').forEach(el => el.classList.remove('scanned'));
+                
+                setupScannerListeners();
+                
+                document.getElementById('ticketNumber').focus();
+            }
+        }
+
+        document.getElementById('checkinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const equipmentData = {
+                ticket_number: document.getElementById('ticketNumber').value,
+                client_id: document.getElementById('clientId').value,
+                equipment_name: document.getElementById('equipmentName').value,
+                equipment_type: document.getElementById('equipmentType').value,
+                equipment_model: document.getElementById('equipmentModel').value,
+                equipment_serial: document.getElementById('equipmentSerial').value,
+                checkin_date: document.getElementById('checkinDate').value,
+                checked_in_by: document.getElementById('checkedInBy').value,
+                current_location: document.getElementById('location').value,
+                notes: document.getElementById('notes').value
+            };
+            
+            const drives = [];
+            document.querySelectorAll('.drive-entry').forEach(entry => {
+                const serial = entry.querySelector('.drive-serial').value;
+                const manufacturer = entry.querySelector('.drive-manufacturer').value;
+                const model = entry.querySelector('.drive-model').value;
+                const capacity = entry.querySelector('.drive-capacity').value;
+                
+                if (serial || manufacturer || model || capacity) {
+                    drives.push({
+                        drive_serial_number: serial,
+                        drive_manufacturer: manufacturer,
+                        drive_model: model,
+                        drive_capacity: capacity
+                    });
+                }
+            });
+            
+            try {
+                const response = await fetch('/api/equipment-checkin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        equipment: equipmentData,
+                        drives: drives
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to check in equipment');
+                }
+                
+                const result = await response.json();
+                
+                showSuccess(`Equipment checked in successfully! Ticket: ${equipmentData.ticket_number}<br>
+                            Hold until: ${result.equipment.hold_until_date}<br>
+                            ${drives.length} drive(s) recorded`);
+                
+                setTimeout(() => {
+                    resetForm();
+                    document.getElementById('ticketNumber').focus();
+                }, 2000);
+                
+            } catch (error) {
+                showError('Failed to check in equipment. Please try again.');
+                console.error('Check-in error:', error);
+            }
+        });
+
+        function showSuccess(message) {
+            const successMsg = document.getElementById('successMessage');
+            successMsg.innerHTML = message;
+            successMsg.style.display = 'block';
+            
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 5000);
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 5000);
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function logout() {
+            await fetch('/auth/logout', { method: 'POST' });
+            window.location.href = '/weekly-grind/login.html';
+        }
+
+        window.addEventListener('load', () => {
+            document.getElementById('ticketNumber').focus();
+        });
+
+        window.addEventListener('beforeunload', (e) => {
+            const ticketNumber = document.getElementById('ticketNumber').value;
+            
+            if (ticketNumber) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+    </script>
+</body>
+</html>

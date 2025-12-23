@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Options - Weekly Grind</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/weekly-grind/js/auth-check.js"></script>
+  
+  <style>
+    :root {
+  --bg: #0b1120;
+  --panel: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --line: #1f2937;
+  --accent: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    .wg-main-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .wg-nav-link {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #2a3a52;
+      background: #1a2332;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .wg-nav-link:hover {
+      border-color: var(--accent);
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .wg-nav-link.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-text {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+    }
+
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .logout-btn:hover { background: #5a6578; }
+
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .page-header {
+      margin-bottom: 2rem;
+    }
+
+    .page-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+    }
+
+    .page-subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* Tab Navigation */
+    .tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--line);
+    }
+
+    .tab {
+      padding: 0.75rem 1.5rem;
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s;
+    }
+
+    .tab:hover {
+      color: var(--text);
+      background: rgba(79, 70, 229, 0.1);
+    }
+
+    .tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    /* Tab Panels */
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* Settings Sections */
+    .settings-section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .settings-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .settings-section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .settings-section-desc {
+      color: var(--muted);
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+    }
+
+    .btn-secondary {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .btn-secondary:hover {
+      background: #1f2937;
+    }
+
+    /* Quick Links */
+    .quick-links {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .quick-link-card {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+
+    .quick-link-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .quick-link-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .quick-link-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 0.5rem 0;
+    }
+
+    .quick-link-desc {
+      color: var(--muted);
+      font-size: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .iframe-container {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+      height: 600px;
+    }
+
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="unified-header">
+      <div class="header-content">
+        <div class="header-row">
+          <strong class="header-title">Admin Options</strong>
+        </div>
+        
+        <div class="header-row">
+          <nav class="wg-main-nav">
+            <a href="/weekly-grind/view" class="wg-nav-link">Schedule View</a>
+            <a href="/weekly-grind/projects" class="wg-nav-link">Projects</a>
+            <a href="/weekly-grind/repair-reimage" class="wg-nav-link">Repair & Reimage</a>
+            <a href="/weekly-grind/decom-checkin" class="wg-nav-link">Equipment Check-In</a>
+            <a href="/weekly-grind/scheduling" class="wg-nav-link">Scheduling</a>
+            <a href="/weekly-grind/supervisor-dashboard" class="wg-nav-link dashboard-link" data-roles="supervisor">Supervisor Dashboard</a>
+            <a href="/weekly-grind/manager-dashboard" class="wg-nav-link dashboard-link" data-roles="manager">Manager Dashboard</a>
+            <a href="/weekly-grind/admin-options" class="wg-nav-link admin-link">Admin Options</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <span class="user-info-text" id="userInfoRight">Loading...</span>
+        <div class="small-profile-icon" id="smallAvatar">👤</div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="page-header">
+      <h1 class="page-title">Admin Options</h1>
+      <p class="page-subtitle">Manage system settings, users, and configurations</p>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('overview')">Overview</button>
+      <button class="tab" onclick="switchTab('users')">Users & Roles</button>
+      <button class="tab" onclick="switchTab('stages')">Stage Time Frames</button>
+      <button class="tab" onclick="switchTab('system')">System Settings</button>
+    </div>
+
+    <!-- Overview Tab -->
+    <div id="tab-overview" class="tab-panel active">
+      <div class="quick-links">
+        <a href="#" onclick="switchTab('users'); return false;" class="quick-link-card">
+          <div class="quick-link-icon">👥</div>
+          <h3 class="quick-link-title">Users & Roles</h3>
+          <p class="quick-link-desc">Manage user accounts, roles, permissions, and team assignments</p>
+        </a>
+
+        <a href="#" onclick="switchTab('stages'); return false;" class="quick-link-card">
+          <div class="quick-link-icon">⏱️</div>
+          <h3 class="quick-link-title">Stage Time Frames</h3>
+          <p class="quick-link-desc">Configure project stage durations and workflow settings</p>
+        </a>
+
+        <a href="#" onclick="switchTab('system'); return false;" class="quick-link-card">
+          <div class="quick-link-icon">⚙️</div>
+          <h3 class="quick-link-title">System Settings</h3>
+          <p class="quick-link-desc">General system configuration and preferences</p>
+        </a>
+
+        <a href="/weekly-grind/repair-reimage" class="quick-link-card">
+          <div class="quick-link-icon">🔧</div>
+          <h3 class="quick-link-title">Repair & Reimage</h3>
+          <p class="quick-link-desc">Manage hardware repair and reimaging tracking</p>
+        </a>
+
+        <a href="/weekly-grind/projects" class="quick-link-card">
+          <div class="quick-link-icon">📊</div>
+          <h3 class="quick-link-title">Projects</h3>
+          <p class="quick-link-desc">View and manage all active projects</p>
+        </a>
+
+        <a href="/weekly-grind/scheduling" class="quick-link-card">
+          <div class="quick-link-icon">📅</div>
+          <h3 class="quick-link-title">Scheduling</h3>
+          <p class="quick-link-desc">Manage weekly schedules and task assignments</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- Users & Roles Tab -->
+    <div id="tab-users" class="tab-panel">
+      <div style="padding: 2rem; text-align: center;">
+        <p style="color: var(--muted); margin-bottom: 1.5rem;">
+          Manage user accounts, roles, and reporting relationships
+        </p>
+        <a href="/weekly-grind/users" class="btn btn-primary" style="display: inline-block; text-decoration: none;">
+          Open Users & Roles
+        </a>
+      </div>
+    </div>
+
+    <!-- Stage Time Frames Tab -->
+    <div id="tab-stages" class="tab-panel">
+      <div style="padding: 2rem; text-align: center;">
+        <p style="color: var(--muted); margin-bottom: 1.5rem;">
+          Configure default timeframes for project stages
+        </p>
+        <a href="/weekly-grind/admin/stage-timeframes" class="btn btn-primary" style="display: inline-block; text-decoration: none;">
+          Open Stage Time Frames
+        </a>
+      </div>
+    </div>
+
+    <!-- System Settings Tab -->
+    <div id="tab-system" class="tab-panel">
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <div>
+            <h3 class="settings-section-title">General Settings</h3>
+            <p class="settings-section-desc">Basic system configuration options</p>
+          </div>
+        </div>
+        <p style="color: var(--muted); text-align: center; padding: 2rem;">
+          System settings will be available in a future update
+        </p>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-section-header">
+          <div>
+            <h3 class="settings-section-title">Backup & Restore</h3>
+            <p class="settings-section-desc">Database backup and restore options</p>
+          </div>
+        </div>
+        <p style="color: var(--muted); text-align: center; padding: 2rem;">
+          Backup options will be available in a future update
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Load user info
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          const displayName = user.display_name || user.username;
+          const avatar = user.avatar || '👤';
+          const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          
+          document.getElementById('smallAvatar').textContent = avatar;
+          document.getElementById('userInfoRight').textContent = `${displayName} (${role})`;
+          
+          // Check if user is admin
+          if (!user.is_admin) {
+            // Redirect non-admins
+            window.location.href = '/weekly-grind/view';
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
+
+    // Switch tabs
+    function switchTab(tabName) {
+      // Update tab buttons
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.target.classList.add('active');
+      
+      // Update tab panels
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.getElementById(`tab-${tabName}`).classList.add('active');
+    }
+
+    // Logout
+    async function logout() {
+      try {
+        await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+        window.location.href = '/weekly-grind/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/weekly-grind/login';
+      }
+    }
+
+    // Initialize
+    loadUserInfo();
+  
+    // Filter navigation based on user role
+    async function filterNavigation() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          
+          // Hide dashboard links not for this role
+          document.querySelectorAll('.dashboard-link').forEach(link => {
+            const roles = link.getAttribute('data-roles');
+            if (roles && !roles.includes(user.role)) {
+              link.style.display = 'none';
+            }
+          });
+          
+          // Hide admin options if not admin
+          if (!user.is_admin) {
+            document.querySelectorAll('.admin-link').forEach(link => {
+              link.style.display = 'none';
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error filtering navigation:', error);
+      }
+    }
+    
+    // Run after page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', filterNavigation);
+    } else {
+      filterNavigation();
+    }
+
+  </script>
+</body>
+</html>

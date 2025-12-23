@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management - Decommissioning | Weekly Grind</title>
+    
+    <style>
+        :root {
+            --bg: #0b1120;
+            --panel: #111827;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --line: #1f2937;
+            --accent: #4f46e5;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Unified Header */
+        header {
+            background: #1a2332;
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid #2a3a52;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .unified-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+        }
+
+        .header-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            flex: 1;
+        }
+
+        .header-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .header-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #e5e7eb;
+            margin: 0;
+        }
+
+        .wg-main-nav {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .wg-nav-link {
+            font-size: 0.85rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            border: 1px solid #2a3a52;
+            background: #1a2332;
+            color: #94a3b8;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .wg-nav-link:hover {
+            border-color: var(--accent);
+            background: #111827;
+            color: #e5e7eb;
+        }
+
+        .wg-nav-link.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .profile-section {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-shrink: 0;
+        }
+
+        .user-info-text {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .small-profile-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .logout-btn {
+            background: #4a5568;
+            color: #e5e7eb;
+            border: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background 0.2s;
+        }
+
+        .logout-btn:hover { background: #5a6578; }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .page-title-section h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .page-subtitle {
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .filter-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.9rem;
+            width: 300px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+        }
+
+        .filter-select {
+            padding: 0.75rem 1rem;
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .equipment-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .equipment-card {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .equipment-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+
+        .equipment-card.ready-for-destruction {
+            border-color: var(--warning);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .equipment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .equipment-main-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.25rem;
+            color: var(--text);
+        }
+
+        .equipment-meta {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.85rem;
+            color: var(--muted);
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-checked_in {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+        }
+
+        .status-ready_for_destruction {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .status-destroyed {
+            background: rgba(107, 114, 128, 0.1);
+            color: #6b7280;
+            border: 1px solid #6b7280;
+        }
+
+        .equipment-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-item {
+            font-size: 0.9rem;
+        }
+
+        .detail-label {
+            color: var(--muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .detail-value {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .hold-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+            padding: 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .drives-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--line);
+        }
+
+        .drives-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .drives-header h4 {
+            font-size: 1rem;
+            color: var(--text);
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #4338ca;
+        }
+
+        .btn-small {
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .drives-list {
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .drive-item {
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            padding: 0.75rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .drive-info {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .drive-info-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .drive-info-label {
+            color: var(--muted);
+            font-size: 0.75rem;
+        }
+
+        .drive-info-value {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .no-drives {
+            text-align: center;
+            padding: 2rem;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: var(--panel);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .modal-header h2 {
+            font-size: 1.5rem;
+            color: var(--text);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: var(--text);
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--line);
+        }
+
+        .btn-secondary:hover {
+            background: #1f2937;
+        }
+
+        .success-message, .error-message {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--muted);
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--muted);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="unified-header">
+            <div class="header-content">
+                <div class="header-row">
+                    <strong class="header-title">Inventory Management</strong>
+                </div>
+                <div class="header-row">
+                    <nav class="wg-main-nav">
+                        <a href="/weekly-grind/decom-checkin" class="wg-nav-link">Equipment Check-In</a>
+                        <a href="/weekly-grind/decom-inventory" class="wg-nav-link active">Inventory Management</a>
+                        <a href="/weekly-grind/decom-destruction" class="wg-nav-link">Destruction Tracking</a>
+                        <a href="/weekly-grind/decom-reports" class="wg-nav-link">Reports</a>
+                    </nav>
+                </div>
+            </div>
+            <div class="profile-section">
+                <span class="user-info-text" id="userInfoRight">Loading...</span>
+                <div class="small-profile-icon" id="smallAvatar">👤</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="page-header">
+            <div class="page-title-section">
+                <h1>📦 Inventory Management</h1>
+                <p class="page-subtitle">Add drive details to checked-in equipment. Drives become ready for destruction after 30-day hold period.</p>
+            </div>
+            <div class="filter-section">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by ticket, client, or equipment...">
+                </div>
+                <select id="statusFilter" class="filter-select">
+                    <option value="all">All Statuses</option>
+                    <option value="checked_in">Checked In</option>
+                    <option value="ready_for_destruction">Ready for Destruction</option>
+                    <option value="destroyed">Destroyed</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Total Equipment</div>
+                <div class="stat-value" id="statTotal">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Checked In</div>
+                <div class="stat-value" id="statCheckedIn">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Ready for Destruction</div>
+                <div class="stat-value" id="statReady">-</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Total Drives</div>
+                <div class="stat-value" id="statDrives">-</div>
+            </div>
+        </div>
+
+        <div class="success-message" id="successMessage"></div>
+        <div class="error-message" id="errorMessage"></div>
+
+        <div id="equipmentContainer">
+            <div class="loading">Loading equipment...</div>
+        </div>
+    </div>
+
+    <!-- Add Drive Modal -->
+    <div class="modal" id="addDriveModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Hard Drive</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="addDriveForm">
+                <input type="hidden" id="equipmentId">
+                <div class="form-group">
+                    <label for="driveSerial">Drive Serial Number *</label>
+                    <input type="text" id="driveSerial" required>
+                </div>
+                <div class="form-group">
+                    <label for="driveManufacturer">Manufacturer</label>
+                    <input type="text" id="driveManufacturer" placeholder="e.g., Western Digital, Seagate">
+                </div>
+                <div class="form-group">
+                    <label for="driveModel">Model</label>
+                    <input type="text" id="driveModel" placeholder="e.g., WD10EZEX">
+                </div>
+                <div class="form-group">
+                    <label for="driveCapacity">Capacity</label>
+                    <input type="text" id="driveCapacity" placeholder="e.g., 1TB, 500GB">
+                </div>
+                <div class="form-group">
+                    <label for="assetTag">Asset Tag</label>
+                    <input type="text" id="assetTag" placeholder="Optional">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Drive</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let equipmentList = [];
+        let currentEquipmentId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await checkAuth();
+            await loadEquipment();
+            setupEventListeners();
+        });
+
+        async function checkAuth() {
+            try {
+                const response = await fetch('/auth/me');
+                if (!response.ok) {
+                    window.location.href = '/weekly-grind/login.html';
+                    return;
+                }
+                currentUser = await response.json();
+                
+                const displayName = currentUser.display_name || currentUser.username;
+                const avatar = currentUser.avatar || '👤';
+                const role = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+                
+                document.getElementById('smallAvatar').textContent = avatar;
+                document.getElementById('userInfoRight').textContent = `${displayName} (${role})`;
+            } catch (error) {
+                window.location.href = '/weekly-grind/login.html';
+            }
+        }
+
+        async function loadEquipment() {
+            try {
+                const response = await fetch('/api/equipment-checkin');
+                if (!response.ok) throw new Error('Failed to load equipment');
+                
+                equipmentList = await response.json();
+                
+                // Load stats
+                const statsResponse = await fetch('/api/equipment-checkin/stats/summary');
+                if (statsResponse.ok) {
+                    const stats = await statsResponse.json();
+                    document.getElementById('statTotal').textContent = stats.total_equipment || 0;
+                    document.getElementById('statCheckedIn').textContent = stats.checked_in || 0;
+                    document.getElementById('statReady').textContent = stats.ready_for_destruction || 0;
+                    document.getElementById('statDrives').textContent = stats.total_drives || 0;
+                }
+                
+                renderEquipment();
+            } catch (error) {
+                showError('Failed to load equipment: ' + error.message);
+                document.getElementById('equipmentContainer').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">⚠️</div>
+                        <h3>Error Loading Equipment</h3>
+                        <p>Please check API endpoints are configured</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderEquipment() {
+            const container = document.getElementById('equipmentContainer');
+            
+            // Apply filters
+            let filtered = filterEquipment();
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📦</div>
+                        <h3>No Equipment Found</h3>
+                        <p>No equipment matches your current filters</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="equipment-grid">
+                    ${filtered.map(equip => renderEquipmentCard(equip)).join('')}
+                </div>
+            `;
+        }
+
+        function renderEquipmentCard(equip) {
+            const isReadyForDestruction = new Date(equip.hold_until_date) < new Date();
+            const daysUntilReady = Math.ceil((new Date(equip.hold_until_date) - new Date()) / (1000 * 60 * 60 * 24));
+            
+            const drives = equip.drives || [];
+            
+            return `
+                <div class="equipment-card ${isReadyForDestruction ? 'ready-for-destruction' : ''}">
+                    <div class="equipment-header">
+                        <div class="equipment-main-info">
+                            <h3>${equip.equipment_name || 'Unnamed Equipment'}</h3>
+                            <div class="equipment-meta">
+                                <span>Ticket: ${equip.ticket_number}</span>
+                                <span>•</span>
+                                <span>Client: ${equip.client_id}</span>
+                            </div>
+                        </div>
+                        <span class="status-badge status-${equip.status}">${equip.status.replace('_', ' ')}</span>
+                    </div>
+                    
+                    ${isReadyForDestruction ? `
+                        <div class="hold-warning">
+                            ⏰ Ready for destruction (hold period ended ${Math.abs(daysUntilReady)} days ago)
+                        </div>
+                    ` : `
+                        <div class="hold-warning">
+                            ⏱️ Hold until: ${formatDate(equip.hold_until_date)} (${daysUntilReady} days remaining)
+                        </div>
+                    `}
+                    
+                    <div class="equipment-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Type</div>
+                            <div class="detail-value">${equip.equipment_type || 'N/A'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Model</div>
+                            <div class="detail-value">${equip.equipment_model || 'N/A'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Serial</div>
+                            <div class="detail-value">${equip.equipment_serial || 'N/A'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Check-In Date</div>
+                            <div class="detail-value">${formatDate(equip.checkin_date)}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="drives-section">
+                        <div class="drives-header">
+                            <h4>Hard Drives (${drives.length})</h4>
+                            <button class="btn btn-primary btn-small" onclick="openAddDriveModal(${equip.id})">
+                                + Add Drive
+                            </button>
+                        </div>
+                        ${drives.length > 0 ? `
+                            <div class="drives-list">
+                                ${drives.map(drive => `
+                                    <div class="drive-item">
+                                        <div class="drive-info">
+                                            <div class="drive-info-item">
+                                                <span class="drive-info-label">Serial</span>
+                                                <span class="drive-info-value">${drive.drive_serial_number}</span>
+                                            </div>
+                                            <div class="drive-info-item">
+                                                <span class="drive-info-label">Manufacturer</span>
+                                                <span class="drive-info-value">${drive.drive_manufacturer || 'N/A'}</span>
+                                            </div>
+                                            <div class="drive-info-item">
+                                                <span class="drive-info-label">Model</span>
+                                                <span class="drive-info-value">${drive.drive_model || 'N/A'}</span>
+                                            </div>
+                                            <div class="drive-info-item">
+                                                <span class="drive-info-label">Capacity</span>
+                                                <span class="drive-info-value">${drive.drive_capacity || 'N/A'}</span>
+                                            </div>
+                                        </div>
+                                        <span class="status-badge status-${drive.status}">${drive.status}</span>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : `
+                            <div class="no-drives">No drives added yet</div>
+                        `}
+                    </div>
+                </div>
+            `;
+        }
+
+        function filterEquipment() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            return equipmentList.filter(equip => {
+                // Status filter
+                if (statusFilter !== 'all' && equip.status !== statusFilter) {
+                    return false;
+                }
+                
+                // Search filter
+                if (searchTerm) {
+                    const searchableText = `
+                        ${equip.ticket_number}
+                        ${equip.client_id}
+                        ${equip.equipment_name}
+                        ${equip.equipment_model}
+                        ${equip.equipment_serial}
+                    `.toLowerCase();
+                    
+                    if (!searchableText.includes(searchTerm)) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+        }
+
+        function setupEventListeners() {
+            document.getElementById('searchInput').addEventListener('input', renderEquipment);
+            document.getElementById('statusFilter').addEventListener('change', renderEquipment);
+            document.getElementById('addDriveForm').addEventListener('submit', handleAddDrive);
+        }
+
+        function openAddDriveModal(equipmentId) {
+            currentEquipmentId = equipmentId;
+            document.getElementById('equipmentId').value = equipmentId;
+            document.getElementById('addDriveForm').reset();
+            document.getElementById('addDriveModal').classList.add('show');
+        }
+
+        function closeModal() {
+            document.getElementById('addDriveModal').classList.remove('show');
+            currentEquipmentId = null;
+        }
+
+        async function handleAddDrive(e) {
+            e.preventDefault();
+            
+            const driveData = {
+                equipment_id: currentEquipmentId,
+                drive_serial_number: document.getElementById('driveSerial').value,
+                drive_manufacturer: document.getElementById('driveManufacturer').value,
+                drive_model: document.getElementById('driveModel').value,
+                drive_capacity: document.getElementById('driveCapacity').value,
+                asset_tag: document.getElementById('assetTag').value
+            };
+            
+            try {
+                const response = await fetch('/api/hard-drives', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(driveData)
+                });
+                
+                if (!response.ok) throw new Error('Failed to add drive');
+                
+                showSuccess('Drive added successfully');
+                closeModal();
+                await loadEquipment();
+            } catch (error) {
+                showError('Failed to add drive: ' + error.message);
+            }
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function showSuccess(message) {
+            const successMsg = document.getElementById('successMessage');
+            successMsg.textContent = message;
+            successMsg.style.display = 'block';
+            setTimeout(() => {
+                successMsg.style.display = 'none';
+            }, 5000);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showError(message) {
+            const errorMsg = document.getElementById('errorMessage');
+            errorMsg.textContent = message;
+            errorMsg.style.display = 'block';
+            setTimeout(() => {
+                errorMsg.style.display = 'none';
+            }, 5000);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function logout() {
+            await fetch('/auth/logout', { method: 'POST' });
+            window.location.href = '/weekly-grind/login.html';
+        }
+    </script>
+</body>
+</html>

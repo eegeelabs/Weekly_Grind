@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Repair & Reimage - Weekly Grind</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/weekly-grind/js/auth-check.js"></script>
+  
+  <style>
+    :root {
+  --bg: #0b1120;
+  --panel: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --line: #1f2937;
+  --accent: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Header Styles */
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    .wg-main-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .wg-nav-link {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #2a3a52;
+      background: #1a2332;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .wg-nav-link:hover {
+      border-color: var(--accent);
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .wg-nav-link.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-text {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+    }
+
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .logout-btn:hover {
+      background: #5a6578;
+    }
+
+    /* Main Content */
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filters {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .filter-group label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select, input[type="text"], input[type="date"] {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .btn {
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+    }
+
+    .btn-secondary {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .btn-secondary:hover {
+      background: #1f2937;
+    }
+
+    /* Table */
+    .table-container {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #0b1322;
+      position: sticky;
+      top: 0;
+    }
+
+    th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid var(--line);
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.9rem;
+    }
+
+    tr:hover {
+      background: #0f172a;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .status-received { background: #1e40af; color: #dbeafe; }
+    .status-testing { background: #a16207; color: #fef3c7; }
+    .status-repair { background: #b91c1c; color: #fecaca; }
+    .status-shipped { background: #15803d; color: #d1fae5; }
+
+    .actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-icon {
+      padding: 0.25rem 0.5rem;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      transition: all 0.2s;
+    }
+
+    .btn-icon:hover {
+      background: var(--panel);
+      color: var(--text);
+      border-color: var(--accent);
+    }
+
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1.5rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .btn-close {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0;
+      width: 2rem;
+      height: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-close:hover {
+      color: var(--text);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-grid.single {
+      grid-template-columns: 1fr;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group label {
+      font-size: 0.85rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      color: var(--text);
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    .form-group textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+
+    .empty-state-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="unified-header">
+      <div class="header-content">
+        <div class="header-row">
+          <strong class="header-title">Repair & Reimage</strong>
+        </div>
+        
+        <div class="header-row">
+          <nav class="wg-main-nav">
+            <a href="/weekly-grind/view" class="wg-nav-link">Schedule View</a>
+            <a href="/weekly-grind/projects" class="wg-nav-link">Projects</a>
+            <a href="/weekly-grind/repair-reimage" class="wg-nav-link">Repair & Reimage</a>
+            <a href="/weekly-grind/decom-checkin" class="wg-nav-link">Equipment Check-In</a>
+            <a href="/weekly-grind/scheduling" class="wg-nav-link">Scheduling</a>
+            <a href="/weekly-grind/supervisor-dashboard" class="wg-nav-link dashboard-link" data-roles="supervisor">Supervisor Dashboard</a>
+            <a href="/weekly-grind/manager-dashboard" class="wg-nav-link dashboard-link" data-roles="manager">Manager Dashboard</a>
+            <a href="/weekly-grind/admin-options" class="wg-nav-link admin-link">Admin Options</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <span class="user-info-text" id="userInfoRight">Loading...</span>
+        <div class="small-profile-icon" id="smallAvatar">👤</div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="toolbar">
+      <div class="filters">
+        <div class="filter-group">
+          <label>Status</label>
+          <select id="filterStatus">
+            <option value="all">All Statuses</option>
+            <option value="Received">Received</option>
+            <option value="Testing">Testing</option>
+            <option value="Sent for Repair">Sent for Repair</option>
+            <option value="Shipped to client">Shipped to client</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Client</label>
+          <input type="text" id="filterClient" placeholder="Search client...">
+        </div>
+
+        <div class="filter-group">
+          <label>Sort By</label>
+          <select id="sortBy">
+            <option value="date_received">Date Received</option>
+            <option value="stp_case_number">STP Case #</option>
+            <option value="status">Status</option>
+            <option value="unit_name">Unit Name</option>
+          </select>
+        </div>
+
+        <button class="btn btn-secondary" onclick="applyFilters()" style="margin-top: 1.3rem;">Apply</button>
+      </div>
+
+      <button id="newItemBtn" class="btn btn-primary" onclick="openModal()">+ New Item</button>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>STP Case #</th>
+            <th>MFG Case #</th>
+            <th>Unit Name</th>
+            <th>Client ID</th>
+            <th>Status</th>
+            <th>Date Received</th>
+            <th>MFG</th>
+            <th>Serial #</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <tr>
+            <td colspan="9" class="loading">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Edit/Create Modal -->
+  <div class="modal" id="itemModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">New Item</h2>
+        <button class="btn-close" onclick="closeModal()">&times;</button>
+      </div>
+
+      <form id="itemForm" onsubmit="saveItem(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>STP Case # *</label>
+            <input type="text" id="stpCase" required>
+          </div>
+
+          <div class="form-group">
+            <label>MFG Case #</label>
+            <input type="text" id="mfgCase">
+          </div>
+
+          <div class="form-group">
+            <label>Unit Name *</label>
+            <input type="text" id="unitName" required>
+          </div>
+
+          <div class="form-group">
+            <label>Client ID</label>
+            <input type="text" id="clientId">
+          </div>
+
+          <div class="form-group">
+            <label>Status *</label>
+            <select id="status" required>
+              <option value="Received">Received</option>
+              <option value="Testing">Testing</option>
+              <option value="Sent for Repair">Sent for Repair</option>
+              <option value="Shipped to client">Shipped to client</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Date Received *</label>
+            <input type="date" id="dateReceived" required>
+          </div>
+
+          <div class="form-group">
+            <label>Manufacturer</label>
+            <select id="manufacturer">
+              <option value="">-- Select --</option>
+              <option value="Dell">Dell</option>
+              <option value="HP">HP</option>
+              <option value="Lenovo">Lenovo</option>
+              <option value="Microsoft">Microsoft</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Serial #</label>
+            <input type="text" id="serialNumber">
+          </div>
+        </div>
+
+        <div class="form-grid single">
+          <div class="form-group">
+            <label>Notes</label>
+            <textarea id="notes"></textarea>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let items = [];
+    let editingId = null;
+
+    // Load user info
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          const displayName = user.display_name || user.username;
+          const avatar = user.avatar || '👤';
+          const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          
+          document.getElementById('smallAvatar').textContent = avatar;
+          document.getElementById('userInfoRight').textContent = `${displayName} (${role})`;
+          
+          // Hide New Item button for techs
+          const newItemBtn = document.getElementById('newItemBtn');
+          if (newItemBtn && user.role === 'tech') {
+            newItemBtn.style.display = 'none';
+          }
+
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
+
+    // Logout
+    async function logout() {
+      try {
+        await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+        window.location.href = '/weekly-grind/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/weekly-grind/login';
+      }
+    }
+
+    // Load items
+    async function loadItems(filters = {}) {
+      try {
+        const params = new URLSearchParams(filters);
+        const response = await fetch(`/api/repair-reimage?${params}`);
+        const data = await response.json();
+        items = data;
+        renderTable();
+      } catch (error) {
+        console.error('Error loading items:', error);
+        document.getElementById('tableBody').innerHTML = 
+          '<tr><td colspan="9" class="empty-state">Error loading data</td></tr>';
+      }
+    }
+
+    // Render table
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      
+      if (items.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="empty-state">
+              <div class="empty-state-icon">📦</div>
+              <div>No items found</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = items.map(item => `
+        <tr>
+          <td>${item.stp_case_number || '-'}</td>
+          <td>${item.mfg_case_number || '-'}</td>
+          <td>${item.unit_name}</td>
+          <td>${item.client_id || '-'}</td>
+          <td><span class="status-badge status-${getStatusClass(item.status)}">${item.status}</span></td>
+          <td>${formatDate(item.date_received)}</td>
+          <td>${item.manufacturer || '-'}</td>
+          <td>${item.serial_number || '-'}</td>
+          <td class="actions">
+            <button class="btn-icon" onclick="editItem(${item.id})" title="Edit">✏️</button>
+            <button class="btn-icon" onclick="deleteItem(${item.id})" title="Delete">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Get status class for badge
+    function getStatusClass(status) {
+      const map = {
+        'Received': 'received',
+        'Testing': 'testing',
+        'Sent for Repair': 'repair',
+        'Shipped to client': 'shipped'
+      };
+      return map[status] || 'received';
+    }
+
+    // Format date
+    function formatDate(dateStr) {
+      if (!dateStr) return '-';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+    }
+
+    // Apply filters
+    function applyFilters() {
+      const filters = {};
+      
+      const status = document.getElementById('filterStatus').value;
+      if (status !== 'all') filters.status = status;
+      
+      const client = document.getElementById('filterClient').value.trim();
+      if (client) filters.client_id = client;
+      
+      const sortBy = document.getElementById('sortBy').value;
+      if (sortBy) filters.sort_by = sortBy;
+      
+      loadItems(filters);
+    }
+
+    // Open modal for new/edit
+    function openModal(id = null) {
+      editingId = id;
+      const modal = document.getElementById('itemModal');
+      const title = document.getElementById('modalTitle');
+      
+      if (id) {
+        title.textContent = 'Edit Item';
+        const item = items.find(i => i.id === id);
+        if (item) {
+          document.getElementById('stpCase').value = item.stp_case_number || '';
+          document.getElementById('mfgCase').value = item.mfg_case_number || '';
+          document.getElementById('unitName').value = item.unit_name || '';
+          document.getElementById('clientId').value = item.client_id || '';
+          document.getElementById('status').value = item.status || 'Received';
+          document.getElementById('dateReceived').value = item.date_received || '';
+          document.getElementById('manufacturer').value = item.manufacturer || '';
+          document.getElementById('serialNumber').value = item.serial_number || '';
+          document.getElementById('notes').value = item.notes || '';
+        }
+      } else {
+        title.textContent = 'New Item';
+        document.getElementById('itemForm').reset();
+        // Set default date to today
+        document.getElementById('dateReceived').value = new Date().toISOString().split('T')[0];
+      }
+      
+      modal.classList.add('active');
+    }
+
+    // Close modal
+    function closeModal() {
+      document.getElementById('itemModal').classList.remove('active');
+      editingId = null;
+    }
+
+    // Edit item
+    function editItem(id) {
+      openModal(id);
+    }
+
+    // Save item
+    async function saveItem(event) {
+      event.preventDefault();
+      
+      const data = {
+        stp_case_number: document.getElementById('stpCase').value.trim(),
+        mfg_case_number: document.getElementById('mfgCase').value.trim(),
+        unit_name: document.getElementById('unitName').value.trim(),
+        client_id: document.getElementById('clientId').value.trim(),
+        status: document.getElementById('status').value,
+        date_received: document.getElementById('dateReceived').value,
+        manufacturer: document.getElementById('manufacturer').value,
+        serial_number: document.getElementById('serialNumber').value.trim(),
+        notes: document.getElementById('notes').value.trim()
+      };
+      
+      try {
+        const url = editingId ? `/api/repair-reimage/${editingId}` : '/api/repair-reimage';
+        const method = editingId ? 'PUT' : 'POST';
+        
+        const response = await fetch(url, {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+        
+        if (response.ok) {
+          closeModal();
+          applyFilters(); // Reload with current filters
+        } else {
+          const error = await response.json();
+          alert(error.error || 'Failed to save item');
+        }
+      } catch (error) {
+        console.error('Error saving item:', error);
+        alert('Failed to save item');
+      }
+    }
+
+    // Delete item
+    async function deleteItem(id) {
+      if (!confirm('Are you sure you want to delete this item?')) return;
+      
+      try {
+        const response = await fetch(`/api/repair-reimage/${id}`, { method: 'DELETE' });
+        
+        if (response.ok) {
+          applyFilters(); // Reload
+        } else {
+          alert('Failed to delete item');
+        }
+      } catch (error) {
+        console.error('Error deleting item:', error);
+        alert('Failed to delete item');
+      }
+    }
+
+    // Initialize
+    loadUserInfo();
+    loadItems();
+  
+    // Filter navigation based on user role
+    async function filterNavigation() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          
+          // Hide dashboard links not for this role
+          document.querySelectorAll('.dashboard-link').forEach(link => {
+            const roles = link.getAttribute('data-roles');
+            if (roles && !roles.includes(user.role)) {
+              link.style.display = 'none';
+            }
+          });
+          
+          // Hide admin options if not admin
+          if (!user.is_admin) {
+            document.querySelectorAll('.admin-link').forEach(link => {
+              link.style.display = 'none';
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error filtering navigation:', error);
+      }
+    }
+    
+    // Run after page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', filterNavigation);
+    } else {
+      filterNavigation();
+    }
+
+  </script>
+</body>
+</html>

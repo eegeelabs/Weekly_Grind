@@ -1,287 +1,1082 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<title>Weekly Grind View</title>
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<style>
-:root {
-  --bg: #0f1520;
-  --panel: #111827;
-  --text: #e5e7eb;
-  --muted: #9ca3af;
-  --line: #1f2937;
-  --ok: #10b981;
-}
-html, body { height:100%; }
-body { background: var(--bg); color: var(--text); margin:0; font:14px system-ui, -apple-system, Segoe UI, Arial; }
-header {
-  background: var(--panel);
-  padding:10px;
-  border-bottom:1px solid var(--line);
-  position:sticky;
-  top:0;
-  z-index:10;
-  display:flex;
-  gap:6px;
-  align-items:center;
-  justify-content:space-between;
-}
-header small { color:var(--muted); }
+  <meta charset="UTF-8" />
+  <title>Weekly Grind</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="/weekly-grind/js/auth-check.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-/* Collapsible tech blocks */
-.tech-block { border-bottom:1px solid var(--line); }
-.tech-head { display:flex; justify-content:space-between; padding:10px; cursor:pointer; background:#0b1322; }
-.tech-head:hover { background:#121c2c; }
-.tech-head .name { font-weight:600; }
-.tech-body { display:block; padding:10px; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0b1120;
+      color: #e5e7eb;
+      font-size: 14px;
+      line-height: 1.4;
+    }
 
-/* Day grid */
-.day-row { display:grid; grid-template-columns: repeat(5, 1fr); gap:8px; margin-bottom:12px; }
-.day-cell { background:#111827; border:1px solid var(--line); padding:8px; border-radius:6px; }
-.day-title { font-weight:600; margin-bottom:6px; display:flex; justify-content:space-between; }
-.day-title small { color:var(--muted); }
+    /* Header */
+    
 
-/* Tasks */
-.task {
-  border-radius:4px;
-  padding:2px 6px;
-  display:grid;
-  grid-template-columns: 1fr auto; /* left: tag + details, right: checkbox */
-  align-items:center;
-  gap:8px;
-  margin-bottom:4px;
-}
-.task.done { opacity:0.4; }
+    .header h1 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
 
-/* Type color tags */
-.type-tag { font-weight:600; padding:1px 4px; border-radius:4px; font-size:12px; margin-right:6px; }
-.type-IMG{background:#2563eb33;color:#60a5fa;}
-.type-Testing{background:#7c3aed33;color:#c4b5fd;}
-.type-Deploy{background:#05966933;color:#6ee7b7;}
-.type-PC-O{background:#d9770633;color:#fcd34d;}
-.type-R\/R{background:#dc262633;color:#fca5a5;}
-.type-Other{background:#6b728033;color:#d1d5db;}
+    
 
-.notes { margin-top:6px; font-size:13px; color:var(--muted); white-space:pre-line; }
+    .week-selector {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
 
-.hint { color:var(--muted); font-size:12px; margin-left:10px; }
-.hint.ok { color:var(--ok); }
-</style>
+    .week-selector input {
+      background: #111827;
+      border: 1px solid #1f2937;
+      color: #e5e7eb;
+      padding: 0.4rem 0.6rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .week-nav-btn {
+      background: #111827;
+      border: 1px solid #1f2937;
+      color: #e5e7eb;
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .week-nav-btn:hover {
+      background: #1f2937;
+      border-color: #475569;
+    }
+
+    .week-nav-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* Main container */
+    .container {
+      padding: 0;
+      overflow-x: auto;
+    }
+
+    /* Tech sections */
+    .tech-section {
+      border-bottom: 2px solid #111827;
+    }
+
+    .tech-name {
+      background: #0f172a;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #f1f5f9;
+      border-bottom: 1px solid #111827;
+    }
+
+    /* Week grid */
+    .week-grid {
+      display: grid;
+      grid-template-columns: 100px repeat(5, 1fr);
+      min-width: 100%;
+    }
+
+    /* Day headers row */
+    .day-headers {
+      display: contents;
+    }
+
+    .day-header {
+      padding: 0.5rem;
+      text-align: center;
+      background: #0f172a;
+      border-right: 1px solid #111827;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .day-header.first {
+      background: #0b1120;
+    }
+
+    .day-label {
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .day-date {
+      margin-top: 0.15rem;
+      color: #64748b;
+    }
+
+    /* Task rows */
+    .task-row {
+      display: contents;
+    }
+
+    .day-label-cell {
+      padding: 0.75rem 1rem;
+      background: #0b1120;
+      border-right: 1px solid #111827;
+      border-bottom: 1px solid #111827;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .day-cell {
+      padding: 0.5rem;
+      background: #0f172a;
+      border-right: 1px solid #111827;
+      border-bottom: 1px solid #111827;
+      min-height: 60px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Tasks within cells */
+    .task {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.35rem 0.5rem;
+      margin-bottom: 0.35rem;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      transition: background 0.15s;
+      flex-wrap: wrap;
+    }
+
+    .task:last-child {
+      margin-bottom: 0;
+    }
+
+    .task:hover {
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    .task.completed {
+      opacity: 0.6;
+    }
+
+    /* Task type badges */
+    .task-type {
+      padding: 0.15rem 0.4rem;
+      border-radius: 3px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .task-type.img { background: #1e3a8a; color: #93c5fd; }
+    .task-type.bypass { background: #3730a3; color: #c4b5fd; }
+    .task-type.testing { background: #6b21a8; color: #e9d5ff; }
+    .task-type.deploy { background: #047857; color: #6ee7b7; }
+    .task-type.pc-o { background: #be185d; color: #fda4af; }
+    .task-type.rr { background: #b45309; color: #fcd34d; }
+    .task-type.other { background: #374151; color: #9ca3af; }
+
+    /* Task details */
+    .task-details {
+      flex: 1;
+      color: #cbd5e1;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      min-width: 0;
+    }
+
+    .task-details .project-id {
+      color: #94a3b8;
+      margin-right: 0.25rem;
+    }
+
+    /* Checkbox */
+    .task-checkbox {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: #10b981;
+      margin-top: 2px;
+    }
+
+    .task-checkbox:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    /* Empty state */
+    .empty-cell {
+      color: #475569;
+      font-size: 0.75rem;
+      font-style: italic;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: #64748b;
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0b1120;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #1f2937;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+  
+    /* Unified Header - Everything in One Section */
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    /* Profile Section - Far Right */
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-text {
+      font-size: 1rem;
+      color: #94a3b8;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+        .profile-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    
+
+    
+
+    
+    .btn {
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #4338ca;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--line);
+    }
+
+    .btn-secondary:hover {
+      background: #1f2937;
+      border-color: var(--accent);
+    }
+
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    .logout-btn:hover {
+      background: #5a6778;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+  
+    /* Unified Navigation Styles */
+    .wg-main-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .wg-nav-link {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #2a3a52;
+      background: #1a2332;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .wg-nav-link:hover {
+      border-color: #4f46e5;
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .wg-nav-link.active {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #fff;
+      font-weight: 500;
+    }
+
+  </style>
 </head>
 <body>
-<header>
-  <strong>Weekly Grind</strong>
-  <span>
-    Week: <input id="week" type="date">
-    <span id="updated" class="hint"></span>
-    <span id="hint" class="hint"></span>
-  </span>
-</header>
-<div id="content"></div>
+  <body>
+  <header>
+    <div class="unified-header">
+      <!-- Left: Page content -->
+      <div class="header-content">
+        <div class="header-row">
+          <strong class="header-title">Weekly Grind</strong>
+          <div class="week-selector">
+        <button class="week-nav-btn" id="prevWeekBtn" title="Previous Week">
+          ? Prev
+        </button>
+        <label>Week:</label>
+        <input type="date" id="weekInput" />
+        <button class="week-nav-btn" id="nextWeekBtn" title="Next Week">
+          Next ?
+        </button>
+      </div>
+          <div id="lastUpdated">Last updated: Loading...</div>
 
-<script>
-const content = document.getElementById('content');
-const week    = document.getElementById('week');
-const hint    = document.getElementById('hint');
-const updated = document.getElementById('updated');
+        </div>
+      
 
-const pad2=n=>String(n).padStart(2,'0');
-const toISO=d=>`${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
-function mondayOf(iso){ const d=new Date(`${iso}T00:00:00`); const w=d.getDay(); d.setDate(d.getDate()+(w===0?-6:1-w)); return toISO(d); }
+        <div class="header-row">
+          <nav class="wg-main-nav">
+            <a href="/weekly-grind/view" class="wg-nav-link">Schedule View</a>
+            <a href="/weekly-grind/projects" class="wg-nav-link">Projects</a>
+            <a href="/weekly-grind/repair-reimage" class="wg-nav-link">Repair & Reimage</a>
+            <a href="/weekly-grind/decom-checkin" class="wg-nav-link">Equipment Check-In</a>
+            <a href="/weekly-grind/scheduling" class="wg-nav-link">Scheduling</a>
+            <a href="/weekly-grind/supervisor-dashboard" class="wg-nav-link dashboard-link" data-roles="supervisor">Supervisor Dashboard</a>
+            <a href="/weekly-grind/manager-dashboard" class="wg-nav-link dashboard-link" data-roles="manager">Manager Dashboard</a>
+            <a href="/weekly-grind/admin-options" class="wg-nav-link admin-link">Admin Options</a>
+          </nav>
+        </div>
 
-/* CSV helpers */
-function parseCSV(text){
-  let rows=[],i=0,field='',inQ=false,row=[];
-  const push=()=>{row.push(field);field='';};
-  const end =()=>{rows.push(row);row=[];};
-  while(i<text.length){
-    const ch=text[i++];
-    if(inQ){
-      if(ch=='"'){ if(text[i]=='"'){ field+='"'; i++; } else inQ=false; }
-      else field+=ch;
-    }else{
-      if(ch=='"') inQ=true;
-      else if(ch==',') push();
-      else if(ch=='\n'){ push(); end(); }
-      else if(ch!='\r') field+=ch;
+        </div>
+
+      <!-- Right: Profile section -->
+      <div class="profile-section">
+        <span class="user-info-text" id="userInfoRight">Loading...</span>
+        <div class="small-profile-icon" id="smallAvatar">👤</div>
+        <div class="profile-group">
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container" id="mainContainer">
+    <div class="loading">Loading schedule...</div>
+  </div>
+
+  <script>
+    let currentWeek = '';
+    let allTechs = [];
+    let csvData = [];
+    let projectStages = [];
+
+    // Utility: Get Monday of week
+    function getMondayOfWeek(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      d.setDate(diff);
+      return d.toISOString().split('T')[0];
     }
-  }
-  if(field.length||row.length){ push(); end(); }
-  return rows;
-}
-function csvEscape(v){ if(v==null)v=''; let s=String(v); if(/[",\n]/.test(s)) s='"'+s.replace(/"/g,'""')+'"'; return s; }
-function toCSV(rows){ return rows.map(r=>r.map(csvEscape).join(',')).join('\n')+'\n'; }
-function normalize(rows){
-  const head=rows[0]||[];
-  const idx={}; ['week_start','tech','day','slot','type','details','notes','status'].forEach(k=>idx[k]=head.indexOf(k));
-  const out=[];
-  for(let i=1;i<rows.length;i++){
-    const r=rows[i]; if(!r||!r.length) continue;
-    out.push({ week_start:r[idx.week_start]||'', tech:r[idx.tech]||'', day:r[idx.day]||'',
-               slot:r[idx.slot]||'', type:r[idx.type]||'', details:r[idx.details]||'',
-               notes:r[idx.notes]||'', status:r[idx.status]||'' });
-  }
-  return out;
-}
-function denormalize(rows){
-  const head=['week_start','tech','day','slot','type','details','notes','status'];
-  const body = rows.map(r=>[r.week_start,r.tech,r.day,r.slot,r.type,r.details,r.notes,r.status]);
-  return [head, ...body];
-}
 
-function dayLabels(mon){
-  const d=new Date(`${mon}T00:00:00`); const names=['Mon','Tue','Wed','Thu','Fri']; const out=[];
-  for(let i=0;i<5;i++){ const dd=new Date(d); dd.setDate(d.getDate()+i);
-    out.push({ iso:toISO(dd), label:names[i], md:toISO(dd).slice(5).replace('-','/') });
-  }
-  return out;
-}
+    // Navigate to previous week
+    function gotoPreviousWeek() {
+      const d = new Date(currentWeek + 'T00:00:00');
+      d.setDate(d.getDate() - 7);
+      currentWeek = d.toISOString().split('T')[0];
+      document.getElementById('weekInput').value = currentWeek;
+      loadData();
+    }
 
-/* Load + render */
-async function load(mon){
-  hint.textContent = '';
-  const resp = await fetch(`/weekly-grind/cantina-schedule-${mon}.csv`, {cache:'no-store'});
-  const rows = normalize(parseCSV(await resp.text()));
-  const techs=[...new Set(rows.map(r=>r.tech).filter(Boolean))].sort();
-  const DAYS=dayLabels(mon);
-  content.innerHTML='';
+    // Navigate to next week
+    function gotoNextWeek() {
+      const d = new Date(currentWeek + 'T00:00:00');
+      d.setDate(d.getDate() + 7);
+      currentWeek = d.toISOString().split('T')[0];
+      document.getElementById('weekInput').value = currentWeek;
+      loadData();
+    }
 
-  techs.forEach(t=>{
-    const block=document.createElement('div'); block.className='tech-block';
-    const head =document.createElement('div'); head.className='tech-head'; head.innerHTML=`<span class="name">${t}</span>`;
-    const body =document.createElement('div'); body.className='tech-body';
-    const dayRow=document.createElement('div'); dayRow.className='day-row';
+    // Utility: Format date
+    function formatDate(dateStr) {
+      const d = new Date(dateStr + 'T00:00:00');
+      return {
+        month: (d.getMonth() + 1) + '/' + d.getDate(),
+        short: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+      };
+    }
 
-    DAYS.forEach(d=>{
-      const cell=document.createElement('div'); cell.className='day-cell';
-      cell.innerHTML=`<div class="day-title">${d.label} <small>${d.md}</small></div>`;
-      const r1=rows.find(r=>r.tech===t&&r.day===d.iso&&r.slot=='1');
-      const r2=rows.find(r=>r.tech===t&&r.day===d.iso&&r.slot=='2');
+    // Utility: Get week dates
+    function getWeekDates(monday) {
+      const dates = [];
+      const d = new Date(monday + 'T00:00:00');
+      const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'];
+      
+      for (let i = 0; i < 5; i++) {
+        const current = new Date(d);
+        current.setDate(d.getDate() + i);
+        const isoDate = current.toISOString().split('T')[0];
+        dates.push({
+          name: dayNames[i],
+          date: isoDate,
+          display: formatDate(isoDate).month
+        });
+      }
+      
+      return dates;
+    }
 
-      [ ['1',r1], ['2',r2] ].forEach(([slot,r])=>{
-        if(!r) return;
-        const done=/^(y|1|true)$/i.test(r.status||'');
-        const div=document.createElement('div'); div.className='task'+(done?' done':'');
-        div.innerHTML = `
-          <div>
-            <span class="type-tag type-${(r.type||'Other').replace(/[^A-Za-z0-9]/g,'_')}">${r.type||''}</span>
-            <span>${r.details||''}</span>
-          </div>
-          <input type="checkbox"
-                 class="done-toggle"
-                 data-tech="${t}"
-                 data-day="${d.iso}"
-                 data-slot="${slot}"
-                 ${done?'checked':''}
-          >`;
-        cell.appendChild(div);
-      });
+    // Parse CSV
+    function parseCSV(text) {
+      const lines = text.trim().split('\n');
+      if (lines.length < 2) return [];
+      
+      const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+      const rows = [];
+      
+      for (let i = 1; i < lines.length; i++) {
+        const line = lines[i];
+        if (!line.trim()) continue;
+        
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let j = 0; j < line.length; j++) {
+          const char = line[j];
+          if (char === '"') {
+            inQuotes = !inQuotes;
+          } else if (char === ',' && !inQuotes) {
+            values.push(current.trim().replace(/^"|"$/g, ''));
+            current = '';
+          } else {
+            current += char;
+          }
+        }
+        values.push(current.trim().replace(/^"|"$/g, ''));
+        
+        const row = {};
+        headers.forEach((header, idx) => {
+          row[header] = values[idx] || '';
+        });
+        rows.push(row);
+      }
+      
+      return rows;
+    }
 
-      const notes=(r1&&r1.notes)||(r2&&r2.notes)||'';
-      if(notes) cell.innerHTML += `<div class="notes">${notes}</div>`;
-
-      dayRow.appendChild(cell);
-    });
-
-    body.appendChild(dayRow);
-    block.appendChild(head); block.appendChild(body);
-    head.onclick = () => { body.style.display = body.style.display==='block' ? 'none':'block'; };
-    content.appendChild(block);
-  });
-
-  // update last-modified
-  try{
-    const headResp = await fetch(`/weekly-grind/cantina-schedule-${mon}.csv`, { method:'HEAD' });
-    const lm = headResp.headers.get('last-modified');
-    if(lm) updated.textContent = `Last updated: ${new Date(lm).toLocaleString()}`;
-  }catch{}
-}
-
-/* Inline save: toggle a single status and persist the CSV */
-async function saveToggle(mon, tech, day, slot, isDone){
-  try{
-    hint.classList.remove('ok');
-    hint.textContent='Saving�';
-
-    // 1) Pull latest CSV
-    const r = await fetch(`/weekly-grind/cantina-schedule-${mon}.csv`, {cache:'no-store'});
-    const rows = parseCSV(await r.text());
-    const head = rows[0] || [];
-    const idx = {};
-    ['week_start','tech','day','slot','type','details','notes','status'].forEach(k=>idx[k]=head.indexOf(k));
-
-    // 2) Find target row; if missing, create a minimal row
-    let found = false;
-    for(let i=1;i<rows.length;i++){
-      const rr = rows[i];
-      if(rr[idx.tech]===tech && rr[idx.day]===day && rr[idx.slot]===slot){
-        rr[idx.status] = isDone ? 'Y' : '';
-        found = true; break;
+    // Load CSV data
+    async function loadCSVData(monday) {
+      try {
+        console.log('=== Loading CSV for week:', monday);
+        const response = await fetch(`/weekly-grind/cantina-schedule-${monday}.csv`, {
+          cache: 'no-store'
+        });
+        
+        if (!response.ok) {
+          console.warn('CSV not found for week:', monday);
+          return [];
+        }
+        
+        const text = await response.text();
+        console.log('CSV loaded, length:', text.length);
+        console.log('CSV content preview:', text.substring(0, 200));
+        const parsed = parseCSV(text);
+        console.log('Parsed rows:', parsed.length);
+        console.log('Sample row:', parsed[0]);
+        return parsed;
+      } catch (err) {
+        console.error('Failed to load CSV:', err);
+        return [];
       }
     }
-    if(!found){
-      const newRow = new Array(head.length).fill('');
-      newRow[idx.week_start] = mon;
-      newRow[idx.tech]       = tech;
-      newRow[idx.day]        = day;
-      newRow[idx.slot]       = slot;
-      newRow[idx.status]     = isDone ? 'Y' : '';
-      rows.push(newRow);
+
+    // Load project stages
+    async function loadProjectStages() {
+      try {
+        const response = await fetch('/api/projects');
+        if (!response.ok) throw new Error('Failed to load projects');
+        
+        const projects = await response.json();
+        const stages = [];
+
+        for (const project of projects) {
+          if (project.status === 'complete' || project.status === 'cancelled') {
+            continue; // Skip completed/cancelled projects
+          }
+
+          try {
+            const stageResponse = await fetch(`/api/projects/${encodeURIComponent(project.pid)}/stages`);
+            if (!stageResponse.ok) continue;
+            
+            const projectStages = await stageResponse.json();
+            
+            projectStages.forEach(stage => {
+              if (stage.assigned_tech_id) {
+                stages.push({
+                  ...stage,
+                  project_pid: project.pid,
+                  project_name: project.project_name,
+                  project_client: project.client_id
+                });
+              }
+            });
+          } catch (err) {
+            console.error(`Failed to load stages for ${project.pid}:`, err);
+          }
+        }
+
+        return stages;
+      } catch (err) {
+        console.error('Failed to load project stages:', err);
+        return [];
+      }
     }
 
-    // 3) Post back via existing Admin save endpoint
-    const csvText = rows.map(r=>r.map(csvEscape).join(',')).join('\n')+'\n';
-    const resp = await fetch('/weekly-grind/api/save', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ mondayISO: mon, csv: csvText })
+    // Load users/techs with smart ordering
+    async function loadTechs() {
+      try {
+        // Get current user
+        const meResponse = await fetch('/auth/me', { credentials: 'include' });
+        const currentUser = await meResponse.json();
+        
+        // Get all users
+        const usersResponse = await fetch('/api/users');
+        if (!usersResponse.ok) throw new Error('Failed to load users');
+        const allUsers = await usersResponse.json();
+        
+        // Filter to ONLY active techs
+        let techs = allUsers.filter(u => 
+          u.role === 'tech' && 
+          (u.is_active === true || u.active === true)
+        );
+        
+        // Get user relations for team info
+        const relationsResponse = await fetch('/api/user-relations');
+        const relations = await relationsResponse.json();
+        
+        // Sort techs based on current user
+        techs = sortTechsByUser(techs, currentUser, relations);
+        
+        return techs;
+      } catch (err) {
+        console.error('Failed to load techs:', err);
+        return [];
+      }
+    }
+    
+    // Sort techs based on who's logged in
+    function sortTechsByUser(techs, currentUser, relations) {
+      if (currentUser.role === 'tech') {
+        // Tech logged in: Me first, then my team ONLY
+        const myTeamIds = getMyTeamMembers(currentUser.id, relations);
+        
+        // If tech has no assigned supervisor, show only themselves
+        if (myTeamIds.length === 0) {
+          console.log('Tech has no supervisor assigned, showing only self');
+          return techs.filter(t => t.id === currentUser.id);
+        }
+        
+        return techs
+          .filter(t => t.id === currentUser.id || myTeamIds.includes(t.id))
+          .sort((a, b) => {
+            // Current user always first
+            if (a.id === currentUser.id) return -1;
+            if (b.id === currentUser.id) return 1;
+            
+            // Team members alphabetical
+            return (a.display_name || a.username).localeCompare(b.display_name || b.username);
+          });
+      } else if (currentUser.role === 'supervisor') {
+        // Supervisor: show only my techs
+        const myTechIds = relations.supervisorTechs
+          .filter(st => st.supervisor_id === currentUser.id)
+          .map(st => st.tech_id);
+        
+        return techs
+          .filter(t => myTechIds.includes(t.id))
+          .sort((a, b) => (a.display_name || a.username).localeCompare(b.display_name || b.username));
+      } else if (currentUser.role === 'manager') {
+        // Manager: show all techs under my supervisors
+        const mySupervisorIds = relations.managerSupervisors
+          .filter(ms => ms.manager_id === currentUser.id)
+          .map(ms => ms.supervisor_id);
+        
+        const myTechIds = relations.supervisorTechs
+          .filter(st => mySupervisorIds.includes(st.supervisor_id))
+          .map(st => st.tech_id);
+        
+        return techs
+          .filter(t => myTechIds.includes(t.id))
+          .sort((a, b) => (a.display_name || a.username).localeCompare(b.display_name || b.username));
+      } else if (currentUser.role === 'coordinator') {
+        // Coordinator: all techs under their manager, sorted by supervisor
+        // First, need to find which manager the coordinator reports to
+        // For now, show all techs grouped by supervisor
+        
+        // Get supervisor info for sorting
+        const techsWithSupervisor = techs.map(tech => {
+          const supervisorRelation = relations.supervisorTechs.find(st => st.tech_id === tech.id);
+          const supervisorId = supervisorRelation ? supervisorRelation.supervisor_id : null;
+          const supervisor = supervisorId ? relations.users.find(u => u.id === supervisorId) : null;
+          return {
+            ...tech,
+            supervisorId,
+            supervisorName: supervisor ? (supervisor.display_name || supervisor.username) : 'No Supervisor'
+          };
+        });
+        
+        // Sort by supervisor name, then tech name
+        return techsWithSupervisor.sort((a, b) => {
+          const supervisorCompare = a.supervisorName.localeCompare(b.supervisorName);
+          if (supervisorCompare !== 0) return supervisorCompare;
+          return (a.display_name || a.username).localeCompare(b.display_name || b.username);
+        });
+      } else if (currentUser.is_admin) {
+        // Admin: show ALL techs alphabetically
+        return techs.sort((a, b) => 
+          (a.display_name || a.username).localeCompare(b.display_name || b.username)
+        );
+      } else {
+        // Default: show all techs alphabetically
+        return techs.sort((a, b) => 
+          (a.display_name || a.username).localeCompare(b.display_name || b.username)
+        );
+      }
+    }
+    
+    // Get team members for a tech (techs with same supervisor)
+    function getMyTeamMembers(techId, relations) {
+      // Find my supervisor
+      const mySupervisor = relations.supervisorTechs.find(st => st.tech_id === techId);
+      if (!mySupervisor) return [];
+      
+      // Get all techs under same supervisor (excluding myself)
+      return relations.supervisorTechs
+        .filter(st => st.supervisor_id === mySupervisor.supervisor_id && st.tech_id !== techId)
+        .map(st => st.tech_id);
+    }
+
+    // Get unique techs from CSV
+    function getTechsFromCSV(csvRows) {
+      const techNames = new Set();
+      csvRows.forEach(row => {
+        if (row.tech) techNames.add(row.tech);
+      });
+      return Array.from(techNames).sort();
+    }
+
+    // Map stage name to task type
+    function getTaskTypeFromStage(stageName) {
+      const name = (stageName || '').toLowerCase();
+      if (name.includes('img') || name.includes('cfg')) return 'img';
+      if (name.includes('test')) return 'testing';
+      if (name.includes('deploy')) return 'deploy';
+      return 'other';
+    }
+
+    // Get tasks for a specific tech and day
+    function getTasksForTechDay(techName, techId, date) {
+      const tasks = [];
+
+      // Add CSV tasks from BOTH slots
+      const csvTasks = csvData.filter(row => 
+        row.tech === techName && 
+        row.day === date &&
+        (row.type || row.details)
+      );
+      
+      // Add all tasks (slot 1 and slot 2) that have content
+      csvTasks.forEach(csvTask => {
+        tasks.push({
+          type: 'csv',
+          taskType: (csvTask.type || 'Other').toLowerCase().replace(/[\/\s]/g, '-'),
+          display: csvTask.type || 'Other',
+          title: csvTask.details || '',
+          projectId: extractProjectId(csvTask.details),
+          completed: /^(y|1|true)$/i.test(csvTask.status || ''),
+          slot: csvTask.slot
+        });
+      });
+
+      // Add project stages (only if no CSV task for this day)
+      if (tasks.length === 0) {
+        const matchingStage = projectStages.find(stage => {
+          if (stage.assigned_tech_id !== techId) return false;
+          
+          const startDate = stage.planned_start_date;
+          const endDate = stage.planned_end_date;
+          
+          return startDate && endDate && date >= startDate && date <= endDate;
+        });
+
+        if (matchingStage) {
+          const taskType = getTaskTypeFromStage(matchingStage.stage_name);
+          tasks.push({
+            type: 'project',
+            taskType: taskType,
+            display: matchingStage.stage_name,
+            title: matchingStage.project_name,
+            projectId: matchingStage.project_pid,
+            completed: matchingStage.is_complete || false,
+            stageId: matchingStage.id,
+            projectPid: matchingStage.project_pid
+          });
+        }
+      }
+
+      return tasks;
+    }
+
+    // Extract project ID from details string
+    function extractProjectId(details) {
+      if (!details) return null;
+      const match = details.match(/([A-Z0-9]+-[A-Z0-9]+-\d+|\([^)]+\))/);
+      return match ? match[1].replace(/[()]/g, '') : null;
+    }
+
+    // Render calendar
+    function renderCalendar() {
+      const container = document.getElementById('mainContainer');
+      const weekDates = getWeekDates(currentWeek);
+
+      let html = '';
+
+      // Group techs by name
+      const techMap = new Map();
+      allTechs.forEach(tech => {
+        techMap.set(tech.username, tech.id);
+      });
+
+      // Get all tech names from both sources
+      const csvTechNames = getTechsFromCSV(csvData);
+      csvTechNames.forEach(name => {
+        if (!techMap.has(name)) {
+          techMap.set(name, null); // CSV-only tech
+        }
+      });
+
+      const sortedTechs = Array.from(techMap.entries()).sort((a, b) => 
+        a[0].localeCompare(b[0], undefined, { sensitivity: 'base' })
+      );
+
+      // Render each tech section
+      sortedTechs.forEach(([techName, techId]) => {
+        html += `<div class="tech-section">`;
+        html += `<div class="tech-name">${techName}</div>`;
+        html += `<div class="week-grid">`;
+        
+        // Day headers
+        html += `<div class="day-headers">`;
+        html += `<div class="day-header first"></div>`;
+        weekDates.forEach(day => {
+          html += `<div class="day-header">
+            <div class="day-label">${day.name}</div>
+            <div class="day-date">${day.display}</div>
+          </div>`;
+        });
+        html += `</div>`;
+
+        // Task rows - show only one row per tech (one task per day max)
+        html += `<div class="task-row">`;
+        
+        // Day label for Monday
+        html += `<div class="day-label-cell">Mon</div>`;
+
+        // Cells for each day
+        weekDates.forEach(day => {
+          const tasks = getTasksForTechDay(techName, techId, day.date);
+          const task = tasks[0]; // Only show first task
+
+          html += `<div class="day-cell">`;
+          if (task) {
+            const typeClass = task.taskType.replace(/\//g, '-').toLowerCase();
+            const completedClass = task.completed ? 'completed' : '';
+            const checkboxAttr = task.type === 'project' 
+              ? `data-stage-id="${task.stageId}" data-project-pid="${task.projectPid}" onchange="handleStageComplete(this)"`
+              : 'disabled';
+            
+            html += `<div class="task ${completedClass}">
+              <span class="task-type ${typeClass}">${task.display}</span>
+              <div class="task-details">
+                ${task.projectId ? `<span class="project-id">${task.projectId}</span>` : ''}
+                ${task.title}
+              </div>
+              <input type="checkbox" 
+                     class="task-checkbox" 
+                     ${task.completed ? 'checked' : ''} 
+                     ${checkboxAttr} />
+            </div>`;
+          }
+          html += `</div>`;
+        });
+
+        html += `</div>`;
+
+        html += `</div>`;
+        html += `</div>`;
+      });
+
+      container.innerHTML = html;
+      document.getElementById('lastUpdated').textContent = 
+        'Last updated: ' + new Date().toLocaleString();
+    }
+
+    // Handle stage completion
+    async function handleStageComplete(checkbox) {
+      const stageId = checkbox.dataset.stageId;
+      const projectPid = checkbox.dataset.projectPid;
+      const isComplete = checkbox.checked;
+
+      try {
+        const response = await fetch(
+          `/api/projects/${encodeURIComponent(projectPid)}/stages/${stageId}/complete`,
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ is_complete: isComplete })
+          }
+        );
+
+        if (!response.ok) throw new Error('Failed to update stage');
+
+        const task = checkbox.closest('.task');
+        if (isComplete) {
+          task.classList.add('completed');
+        } else {
+          task.classList.remove('completed');
+        }
+      } catch (err) {
+        console.error('Failed to update stage completion:', err);
+        alert('Failed to update stage. Please try again.');
+        checkbox.checked = !isComplete;
+      }
+    }
+
+    // Load all data
+    async function loadData() {
+      const container = document.getElementById('mainContainer');
+      container.innerHTML = '<div class="loading">Loading schedule...</div>';
+
+      try {
+        // Load all data in parallel
+        [allTechs, csvData, projectStages] = await Promise.all([
+          loadTechs(),
+          loadCSVData(currentWeek),
+          loadProjectStages()
+        ]);
+
+        renderCalendar();
+      } catch (err) {
+        console.error('Failed to load data:', err);
+        container.innerHTML = `<div class="loading" style="color: #ef4444;">Error loading schedule: ${err.message}</div>`;
+      }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      const today = new Date().toISOString().split('T')[0];
+      currentWeek = getMondayOfWeek(today);
+      
+      document.getElementById('weekInput').value = currentWeek;
+      document.getElementById('weekInput').addEventListener('change', (e) => {
+        currentWeek = getMondayOfWeek(e.target.value);
+        e.target.value = currentWeek;
+        loadData();
+      });
+
+      // Add navigation button listeners
+      document.getElementById('prevWeekBtn').addEventListener('click', gotoPreviousWeek);
+      document.getElementById('nextWeekBtn').addEventListener('click', gotoNextWeek);
+
+      loadData();
     });
+  
+    // Load user info and avatars
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          const displayName = user.display_name || user.username;
+          const avatar = user.avatar || '👤';
+          const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          const fullName = displayName + ' (' + role + ')';
+          
+          // Update avatar (small icon only)
+          const smallAvatar = document.getElementById('smallAvatar');
+          if (smallAvatar) smallAvatar.textContent = avatar;
+          
+          // Update username (right side only)
+          const userInfoRight = document.getElementById('userInfoRight');
+          if (userInfoRight) userInfoRight.textContent = fullName;
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
 
-    if(!resp.ok) throw new Error('Save failed');
+    async function logout() {
+      try {
+        await fetch('/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        window.location.href = '/weekly-grind/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/weekly-grind/login';
+      }
+    }
 
-    hint.textContent='Saved';
-    hint.classList.add('ok');
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadUserInfo);
+    } else {
+      loadUserInfo();
+    }
 
-    // refresh the "last updated" timestamp
-    try{
-      const headResp = await fetch(`/weekly-grind/cantina-schedule-${mon}.csv`, { method:'HEAD' });
-      const lm = headResp.headers.get('last-modified');
-      if(lm) updated.textContent = `Last updated: ${new Date(lm).toLocaleString()}`;
-    }catch{}
+  
+    // Filter navigation based on user role
+    async function filterNavigation() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          
+          // Hide dashboard links not for this role
+          document.querySelectorAll('.dashboard-link').forEach(link => {
+            const roles = link.getAttribute('data-roles');
+            if (roles && !roles.includes(user.role)) {
+              link.style.display = 'none';
+            }
+          });
+          
+          // Hide admin options if not admin
+          if (!user.is_admin) {
+            document.querySelectorAll('.admin-link').forEach(link => {
+              link.style.display = 'none';
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error filtering navigation:', error);
+      }
+    }
+    
+    // Run after page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', filterNavigation);
+    } else {
+      filterNavigation();
+    }
 
-  }catch(e){
-    hint.textContent='Save failed';
-    console.error(e);
-    // Let UI stay as-is; user can re-toggle if needed
-  }finally{
-    setTimeout(()=>{ hint.textContent=''; hint.classList.remove('ok'); }, 1200);
-  }
-}
-
-/* Delegated handler for done checkboxes */
-content.addEventListener('change', (ev)=>{
-  const el = ev.target;
-  if(!el.classList.contains('done-toggle')) return;
-  const mon  = week.value;
-  const tech = el.dataset.tech;
-  const day  = el.dataset.day;
-  const slot = el.dataset.slot;
-  const isDone = el.checked;
-
-  // fade/unfade immediately (optimistic)
-  const taskDiv = el.closest('.task');
-  if(taskDiv) taskDiv.classList.toggle('done', isDone);
-
-  saveToggle(mon, tech, day, slot, isDone);
-});
-
-/* boot */
-const todayISO = toISO(new Date());
-const monISO   = mondayOf(todayISO);
-week.value = monISO;
-week.addEventListener('change', e=>load(e.target.value));
-load(monISO);
-</script>
+  </script>
 </body>
 </html>

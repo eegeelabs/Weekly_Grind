@@ -2158,32 +2158,6 @@ app.get('/weekly-grind/repair-reimage', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'weekly-grind', 'repair-reimage.html'));
 });
 
-// ============================================================================
-// DECOMMISSIONING SYSTEM ROUTES
-// ============================================================================
-
-// Equipment Check-In
-app.get('/weekly-grind/decom-checkin', requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'weekly-grind', 'decom-checkin.html'));
-});
-
-// Inventory Management
-app.get('/weekly-grind/decom-inventory', requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'weekly-grind', 'decom-inventory.html'));
-});
-
-// Destruction Tracking
-app.get('/weekly-grind/decom-destruction', requireRole('coordinator', 'supervisor', 'manager'), (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'weekly-grind', 'decom-destruction.html'));
-});
-
-// Reports
-app.get('/weekly-grind/decom-reports', requireAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'weekly-grind', 'decom-reports.html'));
-});
-
-// ============================================================================
-
 // Scheduling page
 app.get('/weekly-grind/scheduling', requireRole('supervisor', 'manager', 'coordinator'), (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'weekly-grind', 'cantina_scheduling.html'));
@@ -2203,7 +2177,6 @@ app.get('/weekly-grind/supervisor-dashboard', requireRole('supervisor'), (req, r
 app.get('/weekly-grind/manager-dashboard', requireRole('manager'), (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'weekly-grind', 'manager-dashboard.html'));
 
-});
 // ============================================================================
 // EQUIPMENT CHECK-IN & DRIVE TRACKING API
 // Added by auto-installer script
@@ -2636,83 +2609,6 @@ app.get('/api/hard-drives/stats', requireAuth, async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch drive statistics' });
     }
 });
-
-// ============================================================================
-// HARD DRIVES - CRUD OPERATIONS  
-// ============================================================================
-
-// POST - Add single hard drive
-app.post('/api/hard-drives', requireAuth, async (req, res) => {
-  try {
-    const { equipment_id, drive_serial_number, drive_manufacturer, drive_model, drive_capacity, asset_tag } = req.body;
-    if (!equipment_id || !drive_serial_number) {
-      return res.status(400).json({ error: 'equipment_id and drive_serial_number required' });
-    }
-    const result = await pool.query(
-      `INSERT INTO hard_drives (equipment_id, drive_serial_number, drive_manufacturer, drive_model, drive_capacity, asset_tag, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'checked_in') RETURNING *`,
-      [equipment_id, drive_serial_number, drive_manufacturer, drive_model, drive_capacity, asset_tag]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (error) {
-    console.error('Error adding drive:', error);
-    res.status(500).json({ error: 'Failed to add drive' });
-  }
-});
-
-// GET - List hard drives
-app.get('/api/hard-drives', requireAuth, async (req, res) => {
-  try {
-    const { status, equipment_id } = req.query;
-    let query = 'SELECT * FROM hard_drives WHERE 1=1';
-    const params = [];
-    if (status) { params.push(status); query += ` AND status = $${params.length}`; }
-    if (equipment_id) { params.push(equipment_id); query += ` AND equipment_id = $${params.length}`; }
-    query += ' ORDER BY created_at DESC';
-    const result = await pool.query(query, params);
-    res.json(result.rows);
-  } catch (error) {
-    console.error('Error fetching drives:', error);
-    res.status(500).json({ error: 'Failed to fetch drives' });
-  }
-});
-
-// PUT - Update hard drive
-app.put('/api/hard-drives/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { drive_serial_number, drive_manufacturer, drive_model, drive_capacity, asset_tag, status } = req.body;
-    const result = await pool.query(
-      `UPDATE hard_drives SET 
-       drive_serial_number = COALESCE($1, drive_serial_number),
-       drive_manufacturer = COALESCE($2, drive_manufacturer),
-       drive_model = COALESCE($3, drive_model),
-       drive_capacity = COALESCE($4, drive_capacity),
-       asset_tag = COALESCE($5, asset_tag),
-       status = COALESCE($6, status),
-       updated_at = CURRENT_TIMESTAMP
-       WHERE id = $7 RETURNING *`,
-      [drive_serial_number, drive_manufacturer, drive_model, drive_capacity, asset_tag, status, id]
-    );
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Drive not found' });
-    res.json(result.rows[0]);
-  } catch (error) {
-    console.error('Error updating drive:', error);
-    res.status(500).json({ error: 'Failed to update drive' });
-  }
-});
-
-// DELETE - Delete hard drive
-app.delete('/api/hard-drives/:id', requireAuth, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const result = await pool.query('DELETE FROM hard_drives WHERE id = $1 RETURNING *', [id]);
-    if (result.rows.length === 0) return res.status(404).json({ error: 'Drive not found' });
-    res.json({ message: 'Drive deleted', drive: result.rows[0] });
-  } catch (error) {
-    console.error('Error deleting drive:', error);
-    res.status(500).json({ error: 'Failed to delete drive' });
-  }
 });
 
 // Admin Options

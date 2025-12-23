@@ -2,8 +2,9 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Weekly Grind ‚Äì Edit Project</title>
+  <title>Weekly Grind   Edit Project</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="/weekly-grind/js/auth-check.js"></script>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -23,6 +24,11 @@
       font-size: 1.6rem;
       margin: 0;
     }
+    h2 {
+      font-size: 1.2rem;
+      margin: 0 0 0.75rem 0;
+      color: #9ca3af;
+    }
     .meta {
       font-size: 0.85rem;
       color: #9ca3af;
@@ -35,8 +41,9 @@
       max-width: 900px;
       border-radius: 0.75rem;
       border: 1px solid #111827;
-      background: #020617;
+      background: #0b1120;
       padding: 1rem 1.25rem 1.5rem;
+      margin-bottom: 1rem;
     }
     .form-grid {
       display: grid;
@@ -57,7 +64,7 @@
       gap: 0.2rem;
     }
     input, select, textarea {
-      background: #020617;
+      background: #0b1120;
       border: 1px solid #1f2937;
       color: #e5e7eb;
       padding: 0.3rem 0.45rem;
@@ -92,7 +99,6 @@
       border-color: #7f1d1d;
       color: #fee2e2;
     }
-
     button:disabled {
       opacity: 0.6;
       cursor: default;
@@ -110,20 +116,188 @@
     .required {
       color: #f97316;
     }
+
+    /* Stage Management Section */
+    .stage-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+    .stage-item {
+      background: #0a0f1a;
+      border: 1px solid #1f2937;
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      display: grid;
+      grid-template-columns: 30px 1fr 200px 120px 80px;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .stage-number {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #4f46e5;
+      text-align: center;
+    }
+    .stage-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: #e5e7eb;
+    }
+    .stage-complete {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #10b981;
+    }
+    .stage-complete.incomplete {
+      color: #9ca3af;
+    }
+    .stage-dates {
+      font-size: 0.75rem;
+      color: #6b7280;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .admin-only {
+      border: 2px dashed #f59e0b;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      background: rgba(245, 158, 11, 0.05);
+      margin-top: 0.5rem;
+    }
+    .admin-badge {
+      display: inline-block;
+      background: #f59e0b;
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      margin-left: 0.5rem;
+    }
+    .loading-stages {
+      text-align: center;
+      padding: 2rem;
+      color: #9ca3af;
+    }
+  
+    /* Unified Header - Everything in One Section */
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    /* Profile Section - Far Right */
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-text {
+      font-size: 1rem;
+      color: #94a3b8;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+        .profile-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    
+
+    
+
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    .logout-btn:hover {
+      background: #5a6778;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
   </style>
 </head>
 <body>
   <header>
     <div>
       <h1 id="pageTitle">Edit Project</h1>
-      <div class="meta" id="pageSubtitle">Loading project‚Ä¶</div>
+      <div class="meta" id="pageSubtitle">Loading project </div>
     </div>
     <div class="meta">
-      <a href="/weekly-grind/projects" class="link">‚Üê Back to Projects</a>
+      <a href="/weekly-grind/projects" class="link">? Back to Projects</a>
     </div>
   </header>
 
+  <!-- Section 1: Project Details (Coordinator + Admin can edit) -->
   <div class="form-card">
+    <h2>Project Details</h2>
     <form id="projectForm" autocomplete="off">
       <div class="form-grid">
         <label>
@@ -148,7 +322,7 @@
           </select>
         </label>
         <label>
-          <span class="field-label">Customer Temp (1‚Äì5)</span>
+          <span class="field-label">Customer Temp (1 5)</span>
           <input type="number" name="customer_temp" min="1" max="5" />
         </label>
         <label>
@@ -221,14 +395,14 @@
       </label>
 
       <div class="actions">
-  	<button type="button" class="secondary" onclick="window.location.href='/weekly-grind/projects'">
-   	 Cancel
-	</button>
-	<button type="button" class="danger" id="deleteBtn">
-	 Delete
-	</button>
+        <button type="button" class="secondary" onclick="window.location.href='/weekly-grind/projects'">
+          Cancel
+        </button>
+        <button type="button" class="danger" id="deleteBtn">
+          Delete
+        </button>
         <button type="submit" id="submitBtn">
-        Save Changes
+          Save Changes
         </button>
       </div>
 
@@ -236,21 +410,44 @@
     </form>
   </div>
 
-   <script>
+  <!-- Section 2: Stage Management (Admin ONLY) -->
+  <div class="form-card" id="stageSection">
+    <h2>
+      Project Stages
+      <span class="admin-badge">ADMIN ONLY</span>
+    </h2>
+    <div class="meta" style="margin-bottom: 0.75rem;">
+      Assign technicians and set durations for each project stage. Changes save automatically.
+    </div>
+
+    <div id="stagesContainer">
+      <div class="loading-stages">Loading stages...</div>
+    </div>
+
+    <div class="messages" id="stageMessages"></div>
+  </div>
+
+  <script>
     const form = document.getElementById('projectForm');
     const messages = document.getElementById('messages');
+    const stageMessages = document.getElementById('stageMessages');
     const submitBtn = document.getElementById('submitBtn');
     const pageTitle = document.getElementById('pageTitle');
     const pageSubtitle = document.getElementById('pageSubtitle');
     const pidInput = document.getElementById('pidInput');
     const deleteBtn = document.getElementById('deleteBtn');
+    const stagesContainer = document.getElementById('stagesContainer');
 
-    function setMessage(text, type) {
+    let currentPid = '';
+    let allTechs = [];
+    let projectStages = [];
+
+    function setMessage(text, type, target = messages) {
       if (!text) {
-        messages.innerHTML = '';
+        target.innerHTML = '';
         return;
       }
-      messages.innerHTML = '<span class="' + type + '">' + text + '</span>';
+      target.innerHTML = '<span class="' + type + '">' + text + '</span>';
     }
 
     function val(name) {
@@ -267,35 +464,208 @@
       return String(value).slice(0, 10);
     }
 
+    function fmtDateDisplay(value) {
+      if (!value) return ' ';
+      return String(value).slice(0, 10);
+    }
+
     function getPidFromPath() {
       const parts = window.location.pathname.split('/').filter(Boolean);
-      // /weekly-grind/projects/:pid/edit -> ["weekly-grind","projects",":pid","edit"]
       return decodeURIComponent(parts[2] || '');
     }
 
+    // Load technicians for dropdown
+    async function loadTechs() {
+      try {
+        const res = await fetch('/api/users', {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (res.ok) {
+          const users = await res.json();
+          allTechs = users.filter(u => u.role === 'tech' || u.role === 'admin');
+        }
+      } catch (err) {
+        console.error('Failed to load techs', err);
+      }
+    }
+
+    // Load project stages
+    async function loadStages() {
+      if (!currentPid) return;
+
+      try {
+        const res = await fetch(`/api/projects/${encodeURIComponent(currentPid)}/stages`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        
+        if (!res.ok) {
+          stagesContainer.innerHTML = '<div class="loading-stages">Failed to load stages</div>';
+          return;
+        }
+
+        projectStages = await res.json();
+        renderStages();
+      } catch (err) {
+        console.error('Failed to load stages', err);
+        stagesContainer.innerHTML = '<div class="loading-stages">Error loading stages</div>';
+      }
+    }
+
+    // Render stages UI
+    function renderStages() {
+      if (!projectStages.length) {
+        stagesContainer.innerHTML = '<div class="loading-stages">No stages found</div>';
+        return;
+      }
+
+      const html = '<div class="stage-list">' + 
+        projectStages.map((stage, idx) => {
+          const isComplete = stage.is_complete || false;
+          const completeClass = isComplete ? 'stage-complete' : 'stage-complete incomplete';
+          const checkIcon = isComplete ? '?' : '?';
+          
+          return `
+            <div class="stage-item" data-stage-id="${stage.id}">
+              <div class="stage-number">${idx + 1}</div>
+              <div>
+                <div class="stage-name">${stage.stage_name || 'Unnamed Stage'}</div>
+                <div class="${completeClass}">
+                  ${checkIcon} ${isComplete ? 'Complete' : 'In Progress'}
+                </div>
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.25rem;">
+                  Assigned Tech
+                </label>
+                <select class="tech-select" data-stage-id="${stage.id}" style="width: 100%;">
+                  <option value="">(Unassigned)</option>
+                  ${allTechs.map(tech => 
+                    `<option value="${tech.id}" ${tech.id === stage.assigned_tech_id ? 'selected' : ''}>
+                      ${tech.username}
+                    </option>`
+                  ).join('')}
+                </select>
+              </div>
+              <div>
+                <label style="font-size: 0.75rem; color: #9ca3af; margin-bottom: 0.25rem;">
+                  Duration (days)
+                </label>
+                <input type="number" 
+                       class="duration-input" 
+                       data-stage-id="${stage.id}" 
+                       value="${stage.planned_duration_days || 7}" 
+                       min="1" 
+                       max="365"
+                       style="width: 100%;" />
+              </div>
+              <div class="stage-dates">
+                <div>Start: ${fmtDateDisplay(stage.planned_start_date)}</div>
+                <div>End: ${fmtDateDisplay(stage.planned_end_date)}</div>
+              </div>
+            </div>
+          `;
+        }).join('') +
+        '</div>';
+
+      stagesContainer.innerHTML = html;
+
+      // Attach change handlers
+      document.querySelectorAll('.tech-select').forEach(select => {
+        select.addEventListener('change', (e) => handleStageUpdate(e.target));
+      });
+
+      document.querySelectorAll('.duration-input').forEach(input => {
+        input.addEventListener('change', (e) => handleStageUpdate(e.target));
+      });
+    }
+
+    // Handle stage updates
+    async function handleStageUpdate(element) {
+      const stageId = element.dataset.stageId;
+      const stageItem = element.closest('.stage-item');
+      
+      const techSelect = stageItem.querySelector('.tech-select');
+      const durationInput = stageItem.querySelector('.duration-input');
+      
+      const assignedTechId = techSelect.value ? parseInt(techSelect.value) : null;
+      const plannedDuration = parseInt(durationInput.value);
+
+      if (plannedDuration < 1 || plannedDuration > 365) {
+        setMessage('Duration must be between 1 and 365 days', 'error', stageMessages);
+        return;
+      }
+
+      try {
+        setMessage('Saving...', 'success', stageMessages);
+
+        // Find stage definition ID for this stage
+        const stage = projectStages.find(s => s.id === parseInt(stageId));
+        if (!stage) {
+          throw new Error('Stage not found');
+        }
+
+        const payload = {
+          stage_definition_id: stage.stage_definition_id,
+          assigned_tech_id: assignedTechId,
+          planned_duration_days: plannedDuration
+        };
+
+        const res = await fetch(`/api/projects/${encodeURIComponent(currentPid)}/stages`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const body = await res.json();
+          throw new Error(body.error || 'Failed to update stage');
+        }
+
+        setMessage('Stage updated successfully', 'success', stageMessages);
+        setTimeout(() => setMessage('', '', stageMessages), 2000);
+
+        // Reload stages to get updated dates
+        await loadStages();
+
+      } catch (err) {
+        console.error('Failed to update stage', err);
+        setMessage('Failed to update stage: ' + err.message, 'error', stageMessages);
+      }
+    }
+
+    // Load project details
     async function loadProject() {
-      const pid = getPidFromPath();
-      if (!pid) {
+      currentPid = getPidFromPath();
+      
+      if (!currentPid) {
         setMessage('No PID in URL.', 'error');
         return;
       }
 
-      pidInput.value = pid;
-      pageTitle.textContent = 'Edit Project ' + pid;
+      pidInput.value = currentPid;
+      pageTitle.textContent = 'Edit Project ' + currentPid;
+
+      // Load techs first
+      await loadTechs();
 
       try {
-        const res = await fetch('/api/projects/' + encodeURIComponent(pid), {
+        const res = await fetch('/api/projects/' + encodeURIComponent(currentPid), {
           headers: { 'Accept': 'application/json' }
         });
+        
         if (!res.ok) {
           setMessage('Failed to load project (HTTP ' + res.status + ').', 'error');
           pageSubtitle.textContent = 'Could not load project.';
           return;
         }
+        
         const p = await res.json();
-
         pageSubtitle.textContent = p.project_name || 'Edit project details';
 
+        // Populate form
         form.elements['client_id'].value = p.client_id || '';
         form.elements['project_name'].value = p.project_name || '';
         form.elements['status'].value = p.status || 'open';
@@ -307,6 +677,7 @@
         form.elements['num_laptops'].value = p.num_laptops != null ? p.num_laptops : '';
         form.elements['num_images'].value = p.num_images != null ? p.num_images : '';
         form.elements['onsite_or_ship'].value = p.onsite_or_ship || '';
+        
         if (p.onsite_scheduled === true) {
           form.elements['onsite_scheduled'].value = 'true';
         } else if (p.onsite_scheduled === false) {
@@ -314,11 +685,16 @@
         } else {
           form.elements['onsite_scheduled'].value = '';
         }
+        
         form.elements['onsite_date'].value = fmtDateForInput(p.onsite_date);
         form.elements['date_last_contacted'].value = fmtDateForInput(p.date_last_contacted);
         form.elements['contact_method'].value = p.contact_method || '';
         form.elements['description'].value = p.description || '';
         form.elements['notes'].value = p.notes || '';
+
+        // Load stages
+        await loadStages();
+
       } catch (err) {
         console.error('Failed to load project', err);
         setMessage('Failed to load project.', 'error');
@@ -326,7 +702,7 @@
       }
     }
 
-    // Save (upsert) handler
+    // Save project details
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       setMessage('', '');
@@ -345,9 +721,9 @@
         client_id: valOrNull('client_id'),
         project_name,
         description: valOrNull('description'),
-        num_desktops: valOrNull('num_desktops'),
-        num_laptops: valOrNull('num_laptops'),
-        num_images: valOrNull('num_images'),
+        num_desktops: valOrNull('num_desktops') ? Number(valOrNull('num_desktops')) : null,
+        num_laptops: valOrNull('num_laptops') ? Number(valOrNull('num_laptops')) : null,
+        num_images: valOrNull('num_images') ? Number(valOrNull('num_images')) : null,
         onsite_or_ship: valOrNull('onsite_or_ship'),
         onsite_scheduled: (() => {
           const v = val('onsite_scheduled');
@@ -361,7 +737,7 @@
         hardware_eta: valOrNull('hardware_eta'),
         date_last_contacted: valOrNull('date_last_contacted'),
         contact_method: valOrNull('contact_method'),
-        customer_temp: valOrNull('customer_temp'),
+        customer_temp: valOrNull('customer_temp') ? Number(valOrNull('customer_temp')) : null,
         status: valOrNull('status') || 'open',
         notes: valOrNull('notes')
       };
@@ -369,7 +745,7 @@
       try {
         submitBtn.disabled = true;
         deleteBtn.disabled = true;
-        setMessage('Saving changesÖ', 'success');
+        setMessage('Saving changes ', 'success');
 
         const res = await fetch('/api/projects', {
           method: 'POST',
@@ -390,7 +766,7 @@
           return;
         }
 
-        setMessage('Changes saved. RedirectingÖ', 'success');
+        setMessage('Changes saved. Redirecting ', 'success');
         setTimeout(() => {
           window.location.href = '/weekly-grind/projects';
         }, 600);
@@ -402,7 +778,7 @@
       }
     });
 
-    // Delete handler (separate from submit)
+    // Delete handler
     deleteBtn.addEventListener('click', async () => {
       const pid = pidInput.value.trim();
       if (!pid) {
@@ -418,13 +794,11 @@
       try {
         deleteBtn.disabled = true;
         submitBtn.disabled = true;
-        setMessage('Deleting projectÖ', 'success');
+        setMessage('Deleting project ', 'success');
 
         const res = await fetch('/api/projects/' + encodeURIComponent(pid), {
           method: 'DELETE',
-          headers: {
-            'Accept': 'application/json'
-          }
+          headers: { 'Accept': 'application/json' }
         });
 
         if (!res.ok && res.status !== 204) {
@@ -437,7 +811,7 @@
           return;
         }
 
-        setMessage('Project deleted. RedirectingÖ', 'success');
+        setMessage('Project deleted. Redirecting ', 'success');
         setTimeout(() => {
           window.location.href = '/weekly-grind/projects';
         }, 600);
@@ -450,4 +824,49 @@
     });
 
     document.addEventListener('DOMContentLoaded', loadProject);
+  
+    // Load user info and avatars
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          const displayName = user.display_name || user.username;
+          const avatar = user.avatar || 'üë§';
+          const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          const fullName = displayName + ' (' + role + ')';
+          
+          // Update avatar (small icon only)
+          const smallAvatar = document.getElementById('smallAvatar');
+          if (smallAvatar) smallAvatar.textContent = avatar;
+          
+          // Update username (right side only)
+          const userInfoRight = document.getElementById('userInfoRight');
+          if (userInfoRight) userInfoRight.textContent = fullName;
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch('/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        window.location.href = '/weekly-grind/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/weekly-grind/login';
+      }
+    }
+
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadUserInfo);
+    } else {
+      loadUserInfo();
+    }
+
   </script>

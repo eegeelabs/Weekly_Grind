@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Debug</title>
+</head>
+<body>
+  <h1>Admin Options Debug</h1>
+  <div id="output"></div>
+  
+  <script>
+    async function test() {
+      const output = document.getElementById('output');
+      
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        const data = await response.json();
+        
+        output.innerHTML = '<h2>User Data from /auth/me:</h2><pre>' + 
+          JSON.stringify(data, null, 2) + '</pre>';
+        
+        output.innerHTML += '<h2>Checks:</h2>';
+        output.innerHTML += '<p>is_admin value: ' + data.is_admin + '</p>';
+        output.innerHTML += '<p>is_admin type: ' + typeof data.is_admin + '</p>';
+        output.innerHTML += '<p>is_admin === true: ' + (data.is_admin === true) + '</p>';
+        output.innerHTML += '<p>!is_admin: ' + (!data.is_admin) + '</p>';
+        
+        if (!data.is_admin) {
+          output.innerHTML += '<h3 style="color: red;">❌ Admin Options WILL BE HIDDEN</h3>';
+        } else {
+          output.innerHTML += '<h3 style="color: green;">✅ Admin Options SHOULD BE VISIBLE</h3>';
+        }
+        
+      } catch (err) {
+        output.innerHTML = '<p style="color: red;">Error: ' + err.message + '</p>';
+      }
+    }
+    
+    test();
+  </script>
+</body>
+</html>

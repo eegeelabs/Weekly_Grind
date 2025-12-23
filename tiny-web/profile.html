@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Weekly Grind</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .profile-icon {
+            width: 40px;
+            height: 40px;
+            background-color: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 20px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .profile-icon:hover {
+            background-color: #2980b9;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background-color: #c0392b;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+
+        .profile-section {
+            margin-bottom: 40px;
+        }
+
+        .info-row {
+            display: flex;
+            padding: 15px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .info-label {
+            font-weight: bold;
+            width: 150px;
+            color: #7f8c8d;
+        }
+
+        .info-value {
+            color: #2c3e50;
+        }
+
+        .password-section {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .btn-primary {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Weekly Grind - My Profile</h1>
+        <div class="header-right">
+            <a href="/weekly-grind/view" class="btn">Back to Dashboard</a>
+            <button class="btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="profile-section">
+            <h2>My Information</h2>
+            <div class="info-row">
+                <div class="info-label">Display Name:</div>
+                <div class="info-value" id="displayName">Loading...</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Username:</div>
+                <div class="info-value" id="username">Loading...</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Role:</div>
+                <div class="info-value" id="role">Loading...</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Email:</div>
+                <div class="info-value" id="email">Not set</div>
+            </div>
+        </div>
+
+        <div class="profile-section password-section">
+            <h2>Change Password</h2>
+            <div id="passwordMessage" class="message"></div>
+            <form id="passwordForm">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password *</label>
+                    <input type="password" id="currentPassword" required minlength="8">
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password * (minimum 8 characters)</label>
+                    <input type="password" id="newPassword" required minlength="8">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password *</label>
+                    <input type="password" id="confirmPassword" required minlength="8">
+                </div>
+                <button type="submit" class="btn-primary">Change Password</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/weekly-grind/js/auth-check.js"></script>
+    <script>
+        // Load user information
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/auth/me', {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('displayName').textContent = data.display_name || data.username;
+                    document.getElementById('username').textContent = data.username;
+                    document.getElementById('role').textContent = capitalizeRole(data.role);
+                    document.getElementById('email').textContent = data.email || 'Not set';
+                } else {
+                    window.location.href = '/weekly-grind/login';
+                }
+            } catch (error) {
+                console.error('Error loading user info:', error);
+                showMessage('Error loading user information', 'error');
+            }
+        }
+
+        function capitalizeRole(role) {
+            return role.charAt(0).toUpperCase() + role.slice(1);
+        }
+
+        // Handle password change
+        document.getElementById('passwordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            // Validate passwords match
+            if (newPassword !== confirmPassword) {
+                showMessage('New passwords do not match', 'error');
+                return;
+            }
+
+            // Validate password length
+            if (newPassword.length < 8) {
+                showMessage('Password must be at least 8 characters long', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/auth/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        currentPassword,
+                        newPassword
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('Password changed successfully!', 'success');
+                    document.getElementById('passwordForm').reset();
+                } else {
+                    showMessage(data.error || 'Failed to change password', 'error');
+                }
+            } catch (error) {
+                console.error('Error changing password:', error);
+                showMessage('Error changing password. Please try again.', 'error');
+            }
+        });
+
+        function showMessage(text, type) {
+            const messageDiv = document.getElementById('passwordMessage');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messageDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        async function logout() {
+            try {
+                await fetch('/auth/logout', {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                window.location.href = '/weekly-grind/login';
+            } catch (error) {
+                console.error('Logout error:', error);
+                window.location.href = '/weekly-grind/login';
+            }
+        }
+
+        // Load user info on page load
+        loadUserInfo();
+    </script>
+</body>
+</html>

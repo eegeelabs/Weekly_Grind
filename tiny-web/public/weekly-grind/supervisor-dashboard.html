@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Supervisor Dashboard - Weekly Grind</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/weekly-grind/js/auth-check.js"></script>
+  
+  <style>
+    :root {
+  --bg: #0b1120;
+  --panel: #111827;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --line: #1f2937;
+  --accent: #4f46e5;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+    * { box-sizing: border-box; }
+    
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Header Styles */
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    .wg-main-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .wg-nav-link {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #2a3a52;
+      background: #1a2332;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .wg-nav-link:hover {
+      border-color: var(--accent);
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .wg-nav-link.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-text {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+    }
+
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .logout-btn:hover {
+      background: #5a6578;
+    }
+
+    /* Main Content */
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+
+    .dashboard-header {
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 0.5rem 0;
+    }
+
+    .dashboard-subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    /* Stats Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: transform 0.2s;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+
+    .stat-change {
+      font-size: 0.85rem;
+      color: var(--success);
+    }
+
+    .stat-change.negative {
+      color: var(--danger);
+    }
+
+    /* Team Section */
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .section-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:hover {
+      background: var(--panel);
+      border-color: var(--accent);
+    }
+
+    /* Tech Cards */
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1rem;
+    }
+
+    .tech-card {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 1rem;
+      transition: all 0.2s;
+    }
+
+    .tech-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .tech-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .tech-avatar {
+      width: 48px;
+      height: 48px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+    }
+
+    .tech-info {
+      flex: 1;
+    }
+
+    .tech-name {
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 0 0.25rem 0;
+    }
+
+    .tech-status {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .tech-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--line);
+    }
+
+    .tech-stat {
+      text-align: center;
+    }
+
+    .tech-stat-value {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .tech-stat-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* Recent Activity */
+    .activity-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .activity-item {
+      display: flex;
+      gap: 1rem;
+      padding: 0.75rem;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+    }
+
+    .activity-time {
+      color: var(--muted);
+      font-size: 0.75rem;
+      white-space: nowrap;
+    }
+
+    .activity-content {
+      flex: 1;
+    }
+
+    .activity-text {
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .activity-meta {
+      color: var(--muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="unified-header">
+      <div class="header-content">
+        <div class="header-row">
+          <strong class="header-title">Supervisor Dashboard</strong>
+        </div>
+        
+        <div class="header-row">
+          <nav class="wg-main-nav">
+            <a href="/weekly-grind/view" class="wg-nav-link">Schedule View</a>
+            <a href="/weekly-grind/projects" class="wg-nav-link">Projects</a>
+            <a href="/weekly-grind/repair-reimage" class="wg-nav-link">Repair & Reimage</a>
+            <a href="/weekly-grind/scheduling" class="wg-nav-link">Scheduling</a>
+            <a href="/weekly-grind/supervisor-dashboard" class="wg-nav-link dashboard-link" data-roles="supervisor">Supervisor Dashboard</a>
+            <a href="/weekly-grind/manager-dashboard" class="wg-nav-link dashboard-link" data-roles="manager">Manager Dashboard</a>
+            <a href="/weekly-grind/admin-options" class="wg-nav-link admin-link">Admin Options</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <span class="user-info-text" id="userInfoRight">Loading...</span>
+        <div class="small-profile-icon" id="smallAvatar">👤</div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Welcome back, <span id="supervisorName">Supervisor</span>!</h1>
+      <p class="dashboard-subtitle">Here's what's happening with your team today</p>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Team Members</div>
+        <div class="stat-value" id="statTeamSize">-</div>
+        <div class="stat-change">Active techs</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Active Projects</div>
+        <div class="stat-value" id="statActiveProjects">-</div>
+        <div class="stat-change">In progress</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Tasks This Week</div>
+        <div class="stat-value" id="statWeeklyTasks">-</div>
+        <div class="stat-change">Scheduled</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Drives to Destroy</div>
+        <div class="stat-value" id="statDrivesToDestroy">-</div>
+        <div class="stat-change">Ready for destruction</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-label">Completion Rate</div>
+        <div class="stat-value" id="statCompletionRate">-</div>
+        <div class="stat-change">This week</div>
+      </div>
+    </div>
+
+    <!-- Your Team -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Your Team</h2>
+        <div class="section-actions">
+          <button class="btn" onclick="window.location.href='/weekly-grind/scheduling'">Schedule Tasks</button>
+        </div>
+      </div>
+      
+      <div class="tech-grid" id="techGrid">
+        <div class="loading">Loading team members...</div>
+      </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Recent Activity</h2>
+      </div>
+      
+      <div class="activity-list" id="activityList">
+        <div class="loading">Loading activity...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+    let teamMembers = [];
+
+    // Load user info
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          currentUser = await response.json();
+          const displayName = currentUser.display_name || currentUser.username;
+          const avatar = currentUser.avatar || '👤';
+          const role = currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1);
+          
+          document.getElementById('smallAvatar').textContent = avatar;
+          document.getElementById('userInfoRight').textContent = `${displayName} (${role})`;
+          document.getElementById('supervisorName').textContent = displayName;
+          
+          // Load dashboard data
+          loadDashboardData();
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
+
+    // Load dashboard data
+    async function loadDashboardData() {
+      await Promise.all([
+        loadTeamMembers(),
+        loadStats(),
+        loadActivity()
+      ]);
+    }
+
+    // Load team members
+    async function loadTeamMembers() {
+      try {
+        // Get team members from user-relations endpoint
+        const response = await fetch('/api/user-relations');
+        const data = await response.json();
+        
+        // Find techs assigned to this supervisor
+        const myTechIds = data.supervisorTechs
+          .filter(st => st.supervisor_id === currentUser.id)
+          .map(st => st.tech_id);
+        
+        teamMembers = data.users.filter(u => myTechIds.includes(u.id));
+        
+        renderTeamMembers();
+      } catch (error) {
+        console.error('Error loading team:', error);
+        document.getElementById('techGrid').innerHTML = 
+          '<div class="empty-state">Error loading team members</div>';
+      }
+    }
+
+    // Render team members
+    function renderTeamMembers() {
+      const grid = document.getElementById('techGrid');
+      
+      if (teamMembers.length === 0) {
+        grid.innerHTML = '<div class="empty-state">No team members assigned</div>';
+        return;
+      }
+
+      grid.innerHTML = teamMembers.map(tech => `
+        <div class="tech-card">
+          <div class="tech-header">
+            <div class="tech-avatar">${tech.avatar || '👤'}</div>
+            <div class="tech-info">
+              <h3 class="tech-name">${tech.display_name || tech.username}</h3>
+              <div class="tech-status">${tech.is_active ? 'Active' : 'Inactive'}</div>
+            </div>
+          </div>
+          <div class="tech-stats">
+            <div class="tech-stat">
+              <div class="tech-stat-value">-</div>
+              <div class="tech-stat-label">Tasks</div>
+            </div>
+            <div class="tech-stat">
+              <div class="tech-stat-value">-</div>
+              <div class="tech-stat-label">Complete</div>
+            </div>
+            <div class="tech-stat">
+              <div class="tech-stat-value">-</div>
+              <div class="tech-stat-label">In Progress</div>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Load stats
+    async function loadStats() {
+      try {
+        // Set team size
+        document.getElementById('statTeamSize').textContent = teamMembers.length;
+        
+        // Get projects assigned to team members
+        const projectsResponse = await fetch('/api/projects');
+        const projects = await projectsResponse.json();
+        
+        const activeProjects = projects.filter(p => 
+          p.status !== 'complete' && p.status !== 'canceled'
+        ).length;
+        
+        document.getElementById('statActiveProjects').textContent = activeProjects;
+        
+        // Get drives ready for destruction
+        try {
+          const drivesResponse = await fetch('/api/hard-drives/ready-for-destruction');
+          if (drivesResponse.ok) {
+            const drives = await drivesResponse.json();
+            document.getElementById('statDrivesToDestroy').textContent = drives.length || 0;
+          } else {
+            document.getElementById('statDrivesToDestroy').textContent = '0';
+          }
+        } catch (driveError) {
+          console.log('Drives endpoint not available:', driveError);
+          document.getElementById('statDrivesToDestroy').textContent = '-';
+        }
+        
+        // TODO: Load actual task data from schedule
+        document.getElementById('statWeeklyTasks').textContent = '-';
+        document.getElementById('statCompletionRate').textContent = '-';
+        
+      } catch (error) {
+        console.error('Error loading stats:', error);
+      }
+    }
+
+    // Load activity
+    async function loadActivity() {
+      const list = document.getElementById('activityList');
+      
+      // TODO: Load actual activity from audit log
+      list.innerHTML = `
+        <div class="empty-state">
+          Activity tracking coming soon
+        </div>
+      `;
+    }
+
+    // Logout
+    async function logout() {
+      try {
+        await fetch('/auth/logout', { method: 'POST', credentials: 'include' });
+        window.location.href = '/weekly-grind/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/weekly-grind/login';
+      }
+    }
+
+    // Initialize
+    loadUserInfo();
+  
+    // Filter navigation based on user role
+    async function filterNavigation() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          
+          // Hide dashboard links not for this role
+          document.querySelectorAll('.dashboard-link').forEach(link => {
+            const roles = link.getAttribute('data-roles');
+            if (roles && !roles.includes(user.role)) {
+              link.style.display = 'none';
+            }
+          });
+          
+          // Hide admin options if not admin
+          if (!user.is_admin) {
+            document.querySelectorAll('.admin-link').forEach(link => {
+              link.style.display = 'none';
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error filtering navigation:', error);
+      }
+    }
+    
+    // Run after page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', filterNavigation);
+    } else {
+      filterNavigation();
+    }
+
+  </script>
+</body>
+</html>

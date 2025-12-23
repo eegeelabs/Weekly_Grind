@@ -1,11 +1,10 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Weekly Grind – Projects</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="/weekly-grind/js/auth-check.js"></script>
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -34,10 +33,11 @@
       flex-wrap: wrap;
       gap: 0.5rem;
       margin-bottom: 1rem;
+      align-items: center;
     }
     .controls input,
     .controls select {
-      background: #020617;
+      background: #0b1120;
       border: 1px solid #1f2937;
       color: #e5e7eb;
       padding: 0.35rem 0.5rem;
@@ -51,6 +51,19 @@
       align-items: center;
       gap: 0.25rem;
     }
+    .btn {
+      background: #1e40af;
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn:hover {
+      background: #1e3a8a;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -59,7 +72,7 @@
     thead {
       position: sticky;
       top: 0;
-      background: #020617;
+      background: #0b1120;
       z-index: 1;
     }
     th, td {
@@ -73,11 +86,14 @@
       color: #9ca3af;
       cursor: pointer;
     }
+    th.hidden, td.hidden {
+      display: none;
+    }
     tr:nth-child(even) td {
-      background: #020617;
+      background: #0b1120;
     }
     tr:nth-child(odd) td {
-      background: #020617;
+      background: #0b1120;
     }
     .status-pill {
       display: inline-flex;
@@ -120,7 +136,7 @@
       border: 1px solid #111827;
       overflow: auto;
       max-height: calc(100vh - 150px);
-      background: #020617;
+      background: #0b1120;
     }
 
     .error {
@@ -137,19 +153,245 @@
       color: #9ca3af;
       margin-bottom: 0.75rem;
     }
+
+    /* Column Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.9);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: #111827;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      max-width: 400px;
+      width: 90%;
+      border: 1px solid #1f2937;
+    }
+    .modal-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #e5e7eb;
+    }
+    .column-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .column-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      background: #0f172a;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .column-item:hover {
+      background: #111827;
+    }
+    .column-item input[type="checkbox"] {
+      cursor: pointer;
+    }
+    .column-item label {
+      cursor: pointer;
+      flex: 1;
+      color: #e5e7eb;
+      font-size: 0.9rem;
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+    .btn-secondary {
+      background: #475569;
+      color: #fff;
+      border: none;
+      padding: 0.4rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+    .btn-secondary:hover {
+      background: #1f2937;
+    }
+  
+    /* Unified Header - Everything in One Section */
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    /* Profile Section - Far Right */
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-text {
+      font-size: 1rem;
+      color: #94a3b8;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+        .profile-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    
+
+    
+
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    .logout-btn:hover {
+      background: #5a6778;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+  
+    /* Unified Navigation Styles */
+    .wg-main-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .wg-nav-link {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #2a3a52;
+      background: #1a2332;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .wg-nav-link:hover {
+      border-color: #4f46e5;
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .wg-nav-link.active {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #fff;
+      font-weight: 500;
+    }
+
   </style>
 </head>
 <body>
  <header>
-  <div>
-    <h1>Weekly Grind - Projects</h1>
-    <div class="meta" id="meta-summary">Loading projects�</div>
+    <div class="unified-header">
+      <div class="header-content">
+        <div class="header-row">
+          <strong class="header-title">Weekly Grind - Projects</strong>
+          <div class="meta" id="meta-summary" style="margin-left: 1rem; font-size: 0.85rem;">Loading projects…</div>
+        </div>
+        
+        <div class="header-row">
+          <nav class="wg-main-nav">
+            <a href="/weekly-grind/view" class="wg-nav-link">Schedule View</a>
+            <a href="/weekly-grind/projects" class="wg-nav-link active">Projects</a>
+            <a href="/weekly-grind/repair-reimage" class="wg-nav-link">Repair & Reimage</a>
+            <a href="/weekly-grind/decom-checkin" class="wg-nav-link">Equipment Check-In</a>
+            <a href="/weekly-grind/scheduling" class="wg-nav-link">Scheduling</a>
+            <a href="/weekly-grind/supervisor-dashboard" class="wg-nav-link dashboard-link" data-roles="supervisor">Supervisor Dashboard</a>
+            <a href="/weekly-grind/manager-dashboard" class="wg-nav-link dashboard-link" data-roles="manager">Manager Dashboard</a>
+            <a href="/weekly-grind/admin-options" class="wg-nav-link admin-link">Admin Options</a>
+          </nav>
+        </div>
+      </div>
+
+      <div class="profile-section">
+        <span class="user-info-text" id="userInfoRight">Loading...</span>
+        <div class="small-profile-icon" id="smallAvatar">👤</div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Action Buttons -->
+  <div style="display: flex; justify-content: flex-end; gap: 1rem; margin-bottom: 1rem;">
+    <a id="newProjectBtn" href="/weekly-grind/projects/new" class="btn" style="text-decoration: none;">+ New Project</a>
   </div>
-  <div class="meta">
-    <a href="/weekly-grind/admin" style="color:#93c5fd;text-decoration:none;margin-right:1rem;">← Back to Schedule</a>
-    <a href="/weekly-grind/projects/new" style="color:#bbf7d0;text-decoration:none;">+ New Project</a>
-  </div>
-</header>
 
   <div class="controls">
     <label>
@@ -166,6 +408,7 @@
         <option value="cancelled">Cancelled</option>
       </select>
     </label>
+    <button class="btn" id="btnColumns">⚙ Columns</button>
   </div>
 
   <div id="messages"></div>
@@ -174,17 +417,18 @@
     <table id="projectsTable">
       <thead>
         <tr>
-          <th data-sort="pid">PID</th>
-          <th data-sort="client_id">Client</th>
-          <th data-sort="project_name">Project</th>
-          <th data-sort="status">Status</th>
-          <th data-sort="days_open">Days Open</th>
-          <th data-sort="days_past_config_goal">Cfg Δ</th>
-          <th data-sort="days_past_project_goal">Proj Δ</th>
-          <th data-sort="customer_temp">Temp</th>
-          <th data-sort="date_project_opened">Opened</th>
-          <th data-sort="date_hardware_received">HW Recv</th>
-          <th data-sort="date_last_contacted">Last Contact</th>
+          <th data-sort="pid" data-column="pid">PID</th>
+          <th data-sort="client_id" data-column="client">Client</th>
+          <th data-sort="project_name" data-column="project_name">Project</th>
+          <th data-sort="status" data-column="status">Status</th>
+          <th data-sort="days_open" data-column="days_open">Days Open</th>
+          <th data-sort="days_past_config_goal" data-column="cfg_delta">Cfg Δ</th>
+          <th data-sort="days_past_project_goal" data-column="proj_delta">Proj Δ</th>
+          <th data-sort="customer_temp" data-column="temp">Temp</th>
+          <th data-sort="date_project_opened" data-column="opened">Opened</th>
+          <th data-sort="date_hardware_received" data-column="hw_recv">HW Recv</th>
+          <th data-sort="date_last_contacted" data-column="last_contact">Last Contact</th>
+          <th data-column="stp_link">STP</th>
         </tr>
       </thead>
       <tbody>
@@ -193,15 +437,180 @@
     </table>
   </div>
 
+  <!-- Column Visibility Modal -->
+  <div id="columnModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-title">Show/Hide Columns</div>
+      <div class="column-list" id="columnList">
+        <!-- Generated by JS -->
+      </div>
+      <div class="modal-buttons">
+        <button class="btn-secondary" id="btnResetColumns">Reset to Default</button>
+        <button class="btn" id="btnSaveColumns">Save</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const apiUrl = '/api/projects';
     let allProjects = [];
     let currentSort = { key: 'date_project_opened', dir: 'desc' };
 
+    // Column definitions
+    const COLUMNS = [
+      { id: 'pid', label: 'PID', default: true, required: true },
+      { id: 'client', label: 'Client', default: true },
+      { id: 'project_name', label: 'Project', default: true, required: true },
+      { id: 'status', label: 'Status', default: true },
+      { id: 'days_open', label: 'Days Open', default: true },
+      { id: 'cfg_delta', label: 'Config Δ', default: true },
+      { id: 'proj_delta', label: 'Project Δ', default: true },
+      { id: 'temp', label: 'Temperature', default: false },
+      { id: 'opened', label: 'Date Opened', default: true },
+      { id: 'hw_recv', label: 'HW Received', default: false },
+      { id: 'last_contact', label: 'Last Contact', default: false },
+      { id: 'stp_link', label: 'STP Link', default: true }
+    ];
+
+    // Load column preferences from localStorage
+    function loadColumnPreferences() {
+      const saved = localStorage.getItem('projectColumns');
+      if (saved) {
+        try {
+          return JSON.parse(saved);
+        } catch (e) {
+          console.error('Error parsing column preferences:', e);
+        }
+      }
+      // Return default columns
+      return COLUMNS.filter(c => c.default).map(c => c.id);
+    }
+
+    // Save column preferences to localStorage
+    function saveColumnPreferences(visibleColumns) {
+      localStorage.setItem('projectColumns', JSON.stringify(visibleColumns));
+    }
+
+    // Apply column visibility
+    function applyColumnVisibility(visibleColumns) {
+      COLUMNS.forEach(col => {
+        const isVisible = visibleColumns.includes(col.id);
+        const headers = document.querySelectorAll(`th[data-column="${col.id}"]`);
+        const cells = document.querySelectorAll(`td[data-column="${col.id}"]`);
+        
+        headers.forEach(th => {
+          if (isVisible) {
+            th.classList.remove('hidden');
+          } else {
+            th.classList.add('hidden');
+          }
+        });
+        
+        cells.forEach(td => {
+          if (isVisible) {
+            td.classList.remove('hidden');
+          } else {
+            td.classList.add('hidden');
+          }
+        });
+      });
+    }
+
+    // Open column modal
+    function openColumnModal() {
+      const modal = document.getElementById('columnModal');
+      const columnList = document.getElementById('columnList');
+      columnList.innerHTML = '';
+
+      const visibleColumns = loadColumnPreferences();
+
+      COLUMNS.forEach(col => {
+        const item = document.createElement('div');
+        item.className = 'column-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `col-${col.id}`;
+        checkbox.checked = visibleColumns.includes(col.id);
+        checkbox.disabled = col.required;
+        
+        const label = document.createElement('label');
+        label.htmlFor = `col-${col.id}`;
+        label.textContent = col.label + (col.required ? ' (required)' : '');
+        
+        // Only add click handler to label, not the whole item
+        label.onclick = (e) => {
+          e.preventDefault();
+          if (!col.required) {
+            checkbox.checked = !checkbox.checked;
+          }
+        };
+        
+        // Let checkbox handle its own clicks
+        checkbox.onclick = (e) => {
+          e.stopPropagation();
+        };
+        
+        item.appendChild(checkbox);
+        item.appendChild(label);
+        columnList.appendChild(item);
+      });
+
+      modal.style.display = 'flex';
+    }
+
+    // Close column modal
+    function closeColumnModal() {
+      document.getElementById('columnModal').style.display = 'none';
+    }
+
+    // Save column selections
+    function saveColumnSelections() {
+      const visibleColumns = [];
+      COLUMNS.forEach(col => {
+        const checkbox = document.getElementById(`col-${col.id}`);
+        if (checkbox && checkbox.checked) {
+          visibleColumns.push(col.id);
+        }
+      });
+      
+      saveColumnPreferences(visibleColumns);
+      applyColumnVisibility(visibleColumns);
+      closeColumnModal();
+    }
+
+    // Reset to default columns
+    function resetColumns() {
+      const defaultColumns = COLUMNS.filter(c => c.default).map(c => c.id);
+      saveColumnPreferences(defaultColumns);
+      applyColumnVisibility(defaultColumns);
+      
+      // Update checkboxes
+      COLUMNS.forEach(col => {
+        const checkbox = document.getElementById(`col-${col.id}`);
+        if (checkbox) {
+          checkbox.checked = defaultColumns.includes(col.id);
+        }
+      });
+    }
+
     function fmtDate(d) {
       if (!d) return '';
-      // assume ISO string or date-only; just slice
       return String(d).slice(0, 10);
+    }
+
+    function generateStpLink(pid) {
+      if (!pid) return '';
+      
+      // Extract numeric ID from PID
+      // Examples: "31409" -> "31409", "ACME-2025-31409" -> "31409", "PROJECT-31409" -> "31409"
+      const match = pid.match(/(\d+)$/);
+      if (!match) return '';
+      
+      const numericId = match[1];
+      const url = `https://stp.boit.us/projectprofile/${numericId}`;
+      
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" style="color:#93c5fd;text-decoration:none;" title="View in STP">🔗</a>`;
     }
 
     function statusClass(status) {
@@ -278,7 +687,6 @@
         if (va == null) return 1;
         if (vb == null) return -1;
 
-        // numeric sort when both are numeric
         const na = Number(va), nb = Number(vb);
         if (!Number.isNaN(na) && !Number.isNaN(nb)) {
           return dir === 'asc' ? na - nb : nb - na;
@@ -292,30 +700,35 @@
       });
 
       // render
+      const cfgRisk = (p) => riskClass(p.days_past_config_goal);
+      const projRisk = (p) => riskClass(p.days_past_project_goal);
+      
       tbody.innerHTML = rows.map(p => {
-        const cfgRisk = riskClass(p.days_past_config_goal);
-        const projRisk = riskClass(p.days_past_project_goal);
         return `
           <tr>
-            <td>
-  		<a href="/weekly-grind/projects/${encodeURIComponent(p.pid || '')}/edit"
-     		style="color:#93c5fd;text-decoration:none;">
-    		<code>${p.pid || ''}</code>
-  		</a>
-	    </td>
-            <td>${p.client_id || ''}</td>
-            <td>${p.project_name || ''}</td>
-            <td><span class="${statusClass(p.status)}">${p.status || 'n/a'}</span></td>
-            <td>${p.days_open != null ? p.days_open : ''}</td>
-            <td class="${cfgRisk}">${p.days_past_config_goal != null ? p.days_past_config_goal : ''}</td>
-            <td class="${projRisk}">${p.days_past_project_goal != null ? p.days_past_project_goal : ''}</td>
-            <td>${tempTag(p.customer_temp)}</td>
-            <td>${fmtDate(p.date_project_opened)}</td>
-            <td>${fmtDate(p.date_hardware_received)}</td>
-            <td>${fmtDate(p.date_last_contacted)}</td>
+            <td data-column="pid">
+              <a href="/weekly-grind/projects/${encodeURIComponent(p.pid || '')}/edit"
+                 style="color:#93c5fd;text-decoration:none;">
+                <code>${p.pid || ''}</code>
+              </a>
+            </td>
+            <td data-column="client">${p.client_id || ''}</td>
+            <td data-column="project_name">${p.project_name || ''}</td>
+            <td data-column="status"><span class="${statusClass(p.status)}">${p.status || 'n/a'}</span></td>
+            <td data-column="days_open">${p.days_open != null ? p.days_open : ''}</td>
+            <td data-column="cfg_delta" class="${cfgRisk(p)}">${p.days_past_config_goal != null ? p.days_past_config_goal : ''}</td>
+            <td data-column="proj_delta" class="${projRisk(p)}">${p.days_past_project_goal != null ? p.days_past_project_goal : ''}</td>
+            <td data-column="temp">${tempTag(p.customer_temp)}</td>
+            <td data-column="opened">${fmtDate(p.date_project_opened)}</td>
+            <td data-column="hw_recv">${fmtDate(p.date_hardware_received)}</td>
+            <td data-column="last_contact">${fmtDate(p.date_last_contacted)}</td>
+            <td data-column="stp_link">${generateStpLink(p.pid)}</td>
           </tr>
         `;
       }).join('');
+
+      // Apply column visibility after rendering
+      applyColumnVisibility(loadColumnPreferences());
 
       updateMeta(rows.length);
     }
@@ -357,10 +770,112 @@
       document.getElementById('statusFilter').addEventListener('change', () => renderTable());
     }
 
+    // Column modal events
+    document.getElementById('btnColumns').addEventListener('click', openColumnModal);
+    document.getElementById('btnSaveColumns').addEventListener('click', saveColumnSelections);
+    document.getElementById('btnResetColumns').addEventListener('click', resetColumns);
+    
+    // Close modal when clicking outside
+    document.getElementById('columnModal').addEventListener('click', (e) => {
+      if (e.target.id === 'columnModal') {
+        closeColumnModal();
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', () => {
       attachFilters();
       loadProjects();
+      
+      // Apply saved column preferences on load
+      applyColumnVisibility(loadColumnPreferences());
     });
+  
+    // Load user info and avatars
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          const displayName = user.display_name || user.username;
+          const avatar = user.avatar || '👤';
+          const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          const fullName = displayName + ' (' + role + ')';
+          
+          // Update avatar (small icon only)
+          const smallAvatar = document.getElementById('smallAvatar');
+          if (smallAvatar) smallAvatar.textContent = avatar;
+          
+          // Update username (right side only)
+          const userInfoRight = document.getElementById('userInfoRight');
+          if (userInfoRight) userInfoRight.textContent = fullName;
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch('/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        window.location.href = '/weekly-grind/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/weekly-grind/login';
+      }
+    }
+
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadUserInfo);
+    } else {
+      loadUserInfo();
+    }
+
+  
+    // Filter navigation based on user role
+    async function filterNavigation() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          
+          // Hide dashboard links not for this role
+          document.querySelectorAll('.dashboard-link').forEach(link => {
+            const roles = link.getAttribute('data-roles');
+            if (roles && !roles.includes(user.role)) {
+              link.style.display = 'none';
+            }
+          });
+          
+          // Hide admin options if not admin
+          if (!user.is_admin) {
+            document.querySelectorAll('.admin-link').forEach(link => {
+              link.style.display = 'none';
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error filtering navigation:', error);
+      }
+          
+          // Hide New Project button for techs
+          const newProjectBtn = document.getElementById('newProjectBtn');
+          if (newProjectBtn && user.role === 'tech') {
+            newProjectBtn.style.display = 'none';
+          }
+
+    }
+    
+    // Run after page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', filterNavigation);
+    } else {
+      filterNavigation();
+    }
+
   </script>
 </body>
 </html>

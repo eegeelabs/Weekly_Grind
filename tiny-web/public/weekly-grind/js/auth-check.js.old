@@ -1,0 +1,128 @@
+// auth-check.js - Reusable authentication checking for Weekly Grind pages
+
+(function() {
+  'use strict';
+
+  let currentUser = null;
+
+  /**
+   * Check if user is authenticated
+   * Redirects to login page if not authenticated
+   */
+  async function checkAuth() {
+    try {
+      const res = await fetch('/auth/me');
+      
+      if (res.ok) {
+        const user = await res.json();
+        currentUser = user;
+        return user;
+      } else {
+        // Not authenticated, redirect to login
+        const currentPath = window.location.pathname + window.location.search;
+        window.location.href = `/weekly-grind/login?redirect=${encodeURIComponent(currentPath)}`;
+        return null;
+      }
+    } catch (err) {
+      console.error('Auth check failed:', err);
+      // On error, redirect to login
+      const currentPath = window.location.pathname + window.location.search;
+      window.location.href = `/weekly-grind/login?redirect=${encodeURIComponent(currentPath)}`;
+      return null;
+    }
+  }
+
+  /**
+   * Get current logged-in user
+   */
+  function getCurrentUser() {
+    return currentUser;
+  }
+
+  /**
+   * Logout user
+   */
+  async function logout() {
+    try {
+      await fetch('/auth/logout', { method: 'POST' });
+    } catch (err) {
+      console.error('Logout error:', err);
+    }
+    window.location.href = '/weekly-grind/login';
+  }
+
+  /**
+   * Add user info and logout button to page header
+   */
+  function addUserInfoToHeader() {
+    if (!currentUser) return;
+
+    // Find header or create one
+    let header = document.querySelector('header');
+    if (!header) {
+      header = document.querySelector('h1')?.parentElement;
+    }
+    
+    if (!header) return;
+
+    // Create user info element
+    const userInfo = document.createElement('div');
+    userInfo.style.cssText = 'display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: #9ca3af;';
+    
+    const userName = document.createElement('span');
+    userName.textContent = `${currentUser.username} (${currentUser.role})`;
+    userName.style.color = '#e5e7eb';
+    
+    const logoutBtn = document.createElement('button');
+    logoutBtn.textContent = 'Logout';
+    logoutBtn.style.cssText = `
+      background: #374151;
+      color: #e5e7eb;
+      border: 1px solid #4b5563;
+      padding: 0.25rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    `;
+    logoutBtn.onmouseover = () => logoutBtn.style.background = '#4b5563';
+    logoutBtn.onmouseout = () => logoutBtn.style.background = '#374151';
+    logoutBtn.onclick = logout;
+    
+    userInfo.appendChild(userName);
+    userInfo.appendChild(logoutBtn);
+    
+    // Add to header
+    const metaDiv = header.querySelector('.meta');
+    if (metaDiv) {
+      metaDiv.appendChild(userInfo);
+    } else {
+      header.appendChild(userInfo);
+    }
+  }
+
+  /**
+   * Initialize auth on page load
+   */
+  async function initAuth() {
+    const user = await checkAuth();
+    if (user) {
+      addUserInfoToHeader();
+    }
+    return user;
+  }
+
+  // Export functions to global scope
+  window.WeeklyGrindAuth = {
+    checkAuth,
+    getCurrentUser,
+    logout,
+    initAuth
+  };
+
+  // Auto-initialize if not on login page
+  if (!window.location.pathname.includes('/login')) {
+    document.addEventListener('DOMContentLoaded', initAuth);
+  }
+
+})();

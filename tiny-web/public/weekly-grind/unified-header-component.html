@@ -1,0 +1,233 @@
+<!-- unified-header.html -->
+<!-- Include this in all Weekly Grind pages for consistent navigation -->
+
+<style>
+  /* Unified Header Styles */
+  header {
+    background: #1a2332;
+    padding: 1rem 1.5rem;
+    margin: 0;
+    border-bottom: 2px solid #2a3a52;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .unified-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+
+  .header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex: 1;
+  }
+
+  .header-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .header-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    margin: 0;
+  }
+
+  /* Navigation */
+  .wg-main-nav {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .wg-nav-link {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    border: 1px solid #2a3a52;
+    background: #1a2332;
+    color: #94a3b8;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .wg-nav-link:hover {
+    border-color: #4f46e5;
+    background: #111827;
+    color: #e5e7eb;
+  }
+
+  .wg-nav-link.active {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  /* Profile Section */
+  .profile-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+  }
+
+  .user-info-text {
+    font-size: 0.95rem;
+    color: #94a3b8;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .small-profile-icon {
+    width: 40px;
+    height: 40px;
+    background-color: #3498db;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: white;
+    flex-shrink: 0;
+  }
+
+  .logout-btn {
+    background: #4a5568;
+    color: #e5e7eb;
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.2s;
+  }
+
+  .logout-btn:hover {
+    background: #5a6578;
+  }
+</style>
+
+<header>
+  <div class="unified-header">
+    <!-- Left: Page Title and Navigation -->
+    <div class="header-content">
+      <div class="header-row">
+        <strong class="header-title" id="pageTitle">Weekly Grind</strong>
+      </div>
+      
+      <div class="header-row">
+        <nav class="wg-main-nav" id="mainNav">
+          <!-- Navigation will be populated based on user role -->
+        </nav>
+      </div>
+    </div>
+
+    <!-- Right: Profile Section -->
+    <div class="profile-section">
+      <span class="user-info-text" id="userInfoRight">Loading...</span>
+      <div class="small-profile-icon" id="smallAvatar">👤</div>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+</header>
+
+<script>
+  // Navigation configuration based on user role
+  const navigationLinks = {
+    all: [
+      { href: '/weekly-grind/view', label: 'Schedule View', roles: ['tech', 'coordinator', 'supervisor', 'manager', 'admin'] },
+      { href: '/weekly-grind/projects', label: 'Projects', roles: ['coordinator', 'supervisor', 'manager', 'admin'] },
+      { href: '/weekly-grind/scheduling', label: 'Scheduling', roles: ['supervisor', 'manager', 'admin'] },
+      { href: '/weekly-grind/users', label: 'Users & Roles', roles: ['admin'], adminOnly: true },
+      { href: '/weekly-grind/admin/stage-timeframes', label: 'Stage Timeframes', roles: ['admin'], adminOnly: true },
+    ]
+  };
+
+  // Load and display user info
+  async function loadUserInfo() {
+    try {
+      const response = await fetch('/auth/me', { credentials: 'include' });
+      if (response.ok) {
+        const user = await response.json();
+        const displayName = user.display_name || user.username;
+        const avatar = user.avatar || '👤';
+        const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+        const fullName = displayName + ' (' + role + ')';
+        
+        // Update avatar and username
+        const smallAvatar = document.getElementById('smallAvatar');
+        if (smallAvatar) smallAvatar.textContent = avatar;
+        
+        const userInfoRight = document.getElementById('userInfoRight');
+        if (userInfoRight) userInfoRight.textContent = fullName;
+        
+        // Build navigation based on role
+        buildNavigation(user);
+      }
+    } catch (error) {
+      console.error('Error loading user info:', error);
+    }
+  }
+
+  // Build navigation links based on user role and permissions
+  function buildNavigation(user) {
+    const nav = document.getElementById('mainNav');
+    if (!nav) return;
+    
+    const currentPath = window.location.pathname;
+    nav.innerHTML = '';
+    
+    navigationLinks.all.forEach(link => {
+      // Check if user has access to this link
+      const hasRoleAccess = link.roles.includes(user.role);
+      const hasAdminAccess = link.adminOnly ? user.is_admin : true;
+      
+      if (hasRoleAccess && hasAdminAccess) {
+        const a = document.createElement('a');
+        a.href = link.href;
+        a.className = 'wg-nav-link';
+        a.textContent = link.label;
+        
+        // Mark as active if on this page
+        if (currentPath.includes(link.href) || 
+            (link.href.includes('scheduling') && currentPath.includes('admin.html'))) {
+          a.classList.add('active');
+        }
+        
+        nav.appendChild(a);
+      }
+    });
+  }
+
+  // Logout function
+  async function logout() {
+    try {
+      await fetch('/auth/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      window.location.href = '/weekly-grind/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+      window.location.href = '/weekly-grind/login';
+    }
+  }
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadUserInfo);
+  } else {
+    loadUserInfo();
+  }
+</script>

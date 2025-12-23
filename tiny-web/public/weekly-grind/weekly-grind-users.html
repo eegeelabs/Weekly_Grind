@@ -2,22 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Weekly Grind – Users & Roles</title>
+  <title>Weekly Grind ï¿½ Users & Roles</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="/weekly-grind/js/auth-check.js"></script>
   <style>
     body {
       margin: 0;
       padding: 1.5rem;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #020617;
+      background: #0b1120;
       color: #e5e7eb;
     }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 1rem;
-    }
+    
     h1 {
       margin: 0;
       font-size: 1.6rem;
@@ -38,7 +34,7 @@
     }
 
     .card {
-      background: #020617;
+      background: #0b1120;
       border-radius: 0.75rem;
       border: 1px solid #1f2937;
       padding: 1rem 1.25rem;
@@ -60,7 +56,7 @@
     }
 
     select, input[type="text"], input[type="email"], input[type="password"] {
-      background: #020617;
+      background: #0b1120;
       border-radius: 0.375rem;
       border: 1px solid #374151;
       padding: 0.3rem 0.4rem;
@@ -85,13 +81,13 @@
     th {
       font-weight: 600;
       color: #9ca3af;
-      background: #020617;
+      background: #0b1120;
       position: sticky;
       top: 0;
       z-index: 1;
     }
     tbody tr:hover {
-      background: #020617;
+      background: #0b1120;
     }
 
     .pill-role {
@@ -150,7 +146,7 @@
     .listbox {
       width: 100%;
       min-height: 150px;
-      background: #020617;
+      background: #0b1120;
       border-radius: 0.5rem;
       border: 1px solid #374151;
       padding: 0.3rem;
@@ -194,18 +190,176 @@
       color: #6b7280;
       margin-top: 0.25rem;
     }
+  
+    /* Unified Header */
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      margin: -1.5rem -1.5rem 1.5rem -1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .header-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+
+    .header-subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+      margin-top: 0.25rem;
+    }
+
+    /* Profile Section */
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+
+    .user-info-text {
+      font-size: 1rem;
+      color: #94a3b8;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+      flex-shrink: 0;
+    }
+
+    .profile-group {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    .logout-btn:hover {
+      background: #5a6778;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    }
+
+  
+    /* Unified Navigation Styles */
+    .wg-main-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .wg-nav-link {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #2a3a52;
+      background: #1a2332;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .wg-nav-link:hover {
+      border-color: #4f46e5;
+      background: #111827;
+      color: #e5e7eb;
+    }
+
+    .wg-nav-link.active {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: #fff;
+      font-weight: 500;
+    }
+
   </style>
 </head>
 <body>
   <header>
-    <div>
-      <h1>Weekly Grind – Users & Roles</h1>
-      <div class="hint">Admin-only: manage accounts, roles, and reporting lines.</div>
-    </div>
-    <div>
-      <a href="/weekly-grind/admin" class="nav-link">&larr; Back to Admin</a>
-      <a href="/weekly-grind/projects" class="nav-link">Projects</a>
-      <a href="/weekly-grind/initiatives" class="nav-link">Initiatives</a>
+    <div class="unified-header">
+      <!-- Left: Page info and controls -->
+      <div class="header-content">
+        <div class="header-row">
+          <div>
+            <h1 class="header-title">Weekly Grind â€“ Users & Roles</h1>
+            <div class="header-subtitle">Admin-only: manage accounts, roles, and reporting lines.</div>
+          </div>
+        </div>
+
+        <div class="header-row">
+          <nav class="wg-main-nav">
+            <a href="/weekly-grind/view" class="wg-nav-link">Schedule View</a>
+            <a href="/weekly-grind/projects" class="wg-nav-link">Projects</a>
+            <a href="/weekly-grind/repair-reimage" class="wg-nav-link">Repair & Reimage</a>
+            <a href="/weekly-grind/decom-checkin" class="wg-nav-link">Equipment Check-In</a>
+            <a href="/weekly-grind/scheduling" class="wg-nav-link">Scheduling</a>
+            <a href="/weekly-grind/supervisor-dashboard" class="wg-nav-link dashboard-link" data-roles="supervisor">Supervisor Dashboard</a>
+            <a href="/weekly-grind/manager-dashboard" class="wg-nav-link dashboard-link" data-roles="manager">Manager Dashboard</a>
+            <a href="/weekly-grind/admin-options" class="wg-nav-link admin-link">Admin Options</a>
+          </nav>
+        </div>
+
+        </div>
+
+      <!-- Right: Profile section -->
+      <div class="profile-section">
+        <span class="user-info-text" id="userInfoRight">Loading...</span>
+        <div class="small-profile-icon" id="smallAvatar">ðŸ‘¤</div>
+        <div class="profile-group">
+          <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -259,12 +413,12 @@
       </div>
 
       <div style="margin-top: 1rem;">
-        <div class="section-title">Manager ? Supervisors</div>
+        <div class="section-title">Manager ? Direct Reports</div>
         <div class="flex-row">
           <select id="managerSelect"></select>
           <button id="btnSaveManagerSupers" class="btn btn-sm btn-primary">Save Mapping</button>
         </div>
-        <div class="hint">Choose a manager, then select which supervisors report to them.</div>
+        <div class="hint">Choose a manager, then select which supervisors and coordinators report to them.</div>
         <div id="managerSupersList" class="listbox"></div>
       </div>
     </section>
@@ -319,6 +473,57 @@
     </div>
   </div>
 
+  <!-- Change Own Password Modal -->
+  <div id="changePasswordModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); align-items:center; justify-content:center; z-index:1000;">
+    <div class="card" style="width: 380px; max-width: 100%;">
+      <h2>Change Your Password</h2>
+      <div style="display:flex; flex-direction:column; gap:0.4rem;">
+        <label>
+          <span class="section-title">Current Password</span>
+          <input type="password" id="currentPassword" placeholder="Enter current password">
+        </label>
+        <label>
+          <span class="section-title">New Password</span>
+          <input type="password" id="newPassword" placeholder="Enter new password">
+        </label>
+        <label>
+          <span class="section-title">Confirm New Password</span>
+          <input type="password" id="confirmPassword" placeholder="Confirm new password">
+        </label>
+        <div id="changePasswordMessage" style="display:none; margin-top:0.5rem; padding:0.5rem; border-radius:4px;"></div>
+      </div>
+      <div class="flex-row" style="justify-content:flex-end; margin-top:0.75rem; gap:0.5rem;">
+        <button id="changePasswordCancel" class="btn btn-sm">Cancel</button>
+        <button id="changePasswordSave" class="btn btn-sm btn-primary">Change Password</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Admin Reset Password Modal -->
+  <div id="resetPasswordModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.85); align-items:center; justify-content:center; z-index:1000;">
+    <div class="card" style="width: 380px; max-width: 100%;">
+      <h2>Reset Password</h2>
+      <p style="margin:0 0 1rem; color:#9ca3af; font-size:0.9rem;">
+        Reset password for: <strong id="resetUsername"></strong>
+      </p>
+      <div style="display:flex; flex-direction:column; gap:0.4rem;">
+        <label>
+          <span class="section-title">New Password</span>
+          <input type="password" id="resetNewPassword" placeholder="Enter new password">
+        </label>
+        <label>
+          <span class="section-title">Confirm Password</span>
+          <input type="password" id="resetConfirmPassword" placeholder="Confirm new password">
+        </label>
+        <div id="resetPasswordMessage" style="display:none; margin-top:0.5rem; padding:0.5rem; border-radius:4px;"></div>
+      </div>
+      <div class="flex-row" style="justify-content:flex-end; margin-top:0.75rem; gap:0.5rem;">
+        <button id="resetPasswordCancel" class="btn btn-sm">Cancel</button>
+        <button id="resetPasswordSave" class="btn btn-sm btn-primary">Reset Password</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let users = [];
     let relations = null;
@@ -350,11 +555,20 @@
         const tr = document.createElement('tr');
 
         const tdUser = document.createElement('td');
-        tdUser.textContent = u.username;
+        const usernameLink = document.createElement('a');
+        usernameLink.href = '#';
+        usernameLink.textContent = u.username;
+        usernameLink.style.color = '#93c5fd';
+        usernameLink.style.textDecoration = 'none';
+        usernameLink.onclick = (e) => {
+          e.preventDefault();
+          openEditUser(u);
+        };
+        tdUser.appendChild(usernameLink);
         tr.appendChild(tdUser);
 
         const tdName = document.createElement('td');
-        tdName.textContent = u.display_name;
+        tdName.textContent = u.display_name || u.username;
         tr.appendChild(tdName);
 
         const tdRole = document.createElement('td');
@@ -366,9 +580,9 @@
 
         const tdActive = document.createElement('td');
         const dot = document.createElement('span');
-        dot.className = 'status-dot ' + (u.active ? 'on' : 'off');
+        dot.className = 'status-dot ' + (u.is_active ? 'on' : 'off');
         tdActive.appendChild(dot);
-        tdActive.appendChild(document.createTextNode(u.active ? 'Active' : 'Disabled'));
+        tdActive.appendChild(document.createTextNode(u.is_active ? 'Active' : 'Disabled'));
         tr.appendChild(tdActive);
 
         const tdActions = document.createElement('td');
@@ -413,7 +627,7 @@
       document.getElementById('userEmail').value = u.email || '';
       document.getElementById('userRole').value = u.role;
       document.getElementById('userPassword').value = '';
-      document.getElementById('userActive').value = u.active ? 'true' : 'false';
+      document.getElementById('userActive').value = u.is_active ? 'true' : 'false';
       document.getElementById('passwordRow').style.display = 'none';
       document.getElementById('userModalResetRow').style.display = '';
       document.getElementById('userModal').style.display = 'flex';
@@ -487,7 +701,7 @@
       supervisors.forEach(s => {
         const opt = document.createElement('option');
         opt.value = s.id;
-        opt.textContent = `${s.username} (${s.display_name})`;
+        opt.textContent = `${s.username} (${s.display_name || s.role})`;
         supervisorSelect.appendChild(opt);
       });
 
@@ -496,7 +710,7 @@
       managers.forEach(m => {
         const opt = document.createElement('option');
         opt.value = m.id;
-        opt.textContent = `${m.username} (${m.display_name})`;
+        opt.textContent = `${m.username} (${m.display_name || m.role})`;
         managerSelect.appendChild(opt);
       });
 
@@ -528,7 +742,7 @@
         const div = document.createElement('div');
         div.className = 'listbox-item' + (assigned.has(t.id) ? ' selected' : '');
         div.dataset.id = t.id;
-        div.textContent = `${t.username} (${t.display_name})`;
+        div.textContent = `${t.username} (${t.display_name || t.role})`;
         div.onclick = () => toggleListItem(div);
         box.appendChild(div);
       });
@@ -542,18 +756,19 @@
       const mgrId = Number(document.getElementById('managerSelect').value);
       if (!mgrId) return;
 
-      const supervisors = relations.users.filter(u => u.role === 'supervisor');
+      // Include both supervisors and coordinators
+      const reports = relations.users.filter(u => u.role === 'supervisor' || u.role === 'coordinator');
       const assigned = new Set(
         relations.managerSupervisors
           .filter(ms => ms.manager_id === mgrId)
           .map(ms => ms.supervisor_id)
       );
 
-      supervisors.forEach(s => {
+      reports.forEach(s => {
         const div = document.createElement('div');
         div.className = 'listbox-item' + (assigned.has(s.id) ? ' selected' : '');
         div.dataset.id = s.id;
-        div.textContent = `${s.username} (${s.display_name})`;
+        div.textContent = `${s.username} (${s.display_name || s.role})`;
         div.onclick = () => toggleListItem(div);
         box.appendChild(div);
       });
@@ -618,6 +833,143 @@
       renderRelations();
     }
 
+    // ====== PASSWORD MANAGEMENT ======
+    
+    let resetUserId = null;
+
+    function openChangeOwnPassword() {
+      document.getElementById('currentPassword').value = '';
+      document.getElementById('newPassword').value = '';
+      document.getElementById('confirmPassword').value = '';
+      document.getElementById('changePasswordMessage').style.display = 'none';
+      document.getElementById('changePasswordModal').style.display = 'flex';
+    }
+
+    async function saveChangeOwnPassword() {
+      const current = document.getElementById('currentPassword').value;
+      const newPass = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmPassword').value;
+      const msgEl = document.getElementById('changePasswordMessage');
+
+      msgEl.style.display = 'none';
+
+      if (!current || !newPass || !confirm) {
+        msgEl.textContent = 'All fields are required';
+        msgEl.style.background = '#7f1d1d';
+        msgEl.style.color = '#fca5a5';
+        msgEl.style.display = 'block';
+        return;
+      }
+
+      if (newPass !== confirm) {
+        msgEl.textContent = 'New passwords do not match';
+        msgEl.style.background = '#7f1d1d';
+        msgEl.style.color = '#fca5a5';
+        msgEl.style.display = 'block';
+        return;
+      }
+
+      if (newPass.length < 8) {
+        msgEl.textContent = 'Password must be at least 8 characters';
+        msgEl.style.background = '#7f1d1d';
+        msgEl.style.color = '#fca5a5';
+        msgEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        await fetchJSON('/auth/change-password', {
+          method: 'POST',
+          body: JSON.stringify({
+            currentPassword: current,
+            newPassword: newPass
+          })
+        });
+
+        msgEl.textContent = 'Password changed successfully!';
+        msgEl.style.background = '#14532d';
+        msgEl.style.color = '#bbf7d0';
+        msgEl.style.display = 'block';
+
+        setTimeout(() => {
+          document.getElementById('changePasswordModal').style.display = 'none';
+        }, 1500);
+      } catch (err) {
+        msgEl.textContent = err.message || 'Failed to change password';
+        msgEl.style.background = '#7f1d1d';
+        msgEl.style.color = '#fca5a5';
+        msgEl.style.display = 'block';
+      }
+    }
+
+    function resetPassword(user) {
+      resetUserId = user.id;
+      document.getElementById('resetUsername').textContent = user.username;
+      document.getElementById('resetNewPassword').value = '';
+      document.getElementById('resetConfirmPassword').value = '';
+      document.getElementById('resetPasswordMessage').style.display = 'none';
+      document.getElementById('resetPasswordModal').style.display = 'flex';
+    }
+
+    async function saveResetPassword() {
+      const newPass = document.getElementById('resetNewPassword').value;
+      const confirm = document.getElementById('resetConfirmPassword').value;
+      const msgEl = document.getElementById('resetPasswordMessage');
+
+      msgEl.style.display = 'none';
+
+      if (!newPass || !confirm) {
+        msgEl.textContent = 'Both fields are required';
+        msgEl.style.background = '#7f1d1d';
+        msgEl.style.color = '#fca5a5';
+        msgEl.style.display = 'block';
+        return;
+      }
+
+      if (newPass !== confirm) {
+        msgEl.textContent = 'Passwords do not match';
+        msgEl.style.background = '#7f1d1d';
+        msgEl.style.color = '#fca5a5';
+        msgEl.style.display = 'block';
+        return;
+      }
+
+      if (newPass.length < 8) {
+        msgEl.textContent = 'Password must be at least 8 characters';
+        msgEl.style.background = '#7f1d1d';
+        msgEl.style.color = '#fca5a5';
+        msgEl.style.display = 'block';
+        return;
+      }
+
+      try {
+        const result = await fetchJSON('/auth/admin-reset-password', {
+          method: 'POST',
+          body: JSON.stringify({
+            userId: resetUserId,
+            newPassword: newPass
+          })
+        });
+
+        msgEl.textContent = `Password reset for ${result.username}`;
+        msgEl.style.background = '#14532d';
+        msgEl.style.color = '#bbf7d0';
+        msgEl.style.display = 'block';
+
+        setTimeout(() => {
+          document.getElementById('resetPasswordModal').style.display = 'none';
+          resetUserId = null;
+        }, 1500);
+      } catch (err) {
+        msgEl.textContent = err.message || 'Failed to reset password';
+        msgEl.style.background = '#7f1d1d';
+        msgEl.style.color = '#fca5a5';
+        msgEl.style.display = 'block';
+      }
+    }
+
+    // ====== END PASSWORD MANAGEMENT ======
+
     function wireEvents() {
       document.getElementById('filterRole').addEventListener('change', renderUsers);
       document.getElementById('btnNewUser').addEventListener('click', openNewUser);
@@ -630,6 +982,19 @@
       document.getElementById('managerSelect').addEventListener('change', updateManagerSupersList);
       document.getElementById('btnSaveSupervisorTechs').addEventListener('click', saveSupervisorTechs);
       document.getElementById('btnSaveManagerSupers').addEventListener('click', saveManagerSupers);
+
+      // Password management
+      // document.getElementById('changeOwnPasswordBtn').addEventListener('click', openChangeOwnPassword); // Button removed
+      document.getElementById('changePasswordCancel').addEventListener('click', () => {
+        document.getElementById('changePasswordModal').style.display = 'none';
+      });
+      document.getElementById('changePasswordSave').addEventListener('click', saveChangeOwnPassword);
+      
+      document.getElementById('resetPasswordCancel').addEventListener('click', () => {
+        document.getElementById('resetPasswordModal').style.display = 'none';
+        resetUserId = null;
+      });
+      document.getElementById('resetPasswordSave').addEventListener('click', saveResetPassword);
     }
 
     (async function init() {
@@ -642,6 +1007,85 @@
         alert('Error loading Users & Roles page: ' + err.message);
       }
     })();
+  
+    // Load user info and avatars
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          const displayName = user.display_name || user.username;
+          const avatar = user.avatar || 'ðŸ‘¤';
+          const role = user.role.charAt(0).toUpperCase() + user.role.slice(1);
+          const fullName = displayName + ' (' + role + ')';
+          
+          // Update avatar (small icon only)
+          const smallAvatar = document.getElementById('smallAvatar');
+          if (smallAvatar) smallAvatar.textContent = avatar;
+          
+          // Update username
+          const userInfoRight = document.getElementById('userInfoRight');
+          if (userInfoRight) userInfoRight.textContent = fullName;
+        }
+      } catch (error) {
+        console.error('Error loading user info:', error);
+      }
+    }
+
+    async function logout() {
+      try {
+        await fetch('/auth/logout', {
+          method: 'POST',
+          credentials: 'include'
+        });
+        window.location.href = '/weekly-grind/login';
+      } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/weekly-grind/login';
+      }
+    }
+
+    // Load on page ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', loadUserInfo);
+    } else {
+      loadUserInfo();
+    }
+
+    // Filter navigation based on user role
+    async function filterNavigation() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          
+          // Hide dashboard links not for this role
+          document.querySelectorAll('.dashboard-link').forEach(link => {
+            const roles = link.getAttribute('data-roles');
+            if (roles && !roles.includes(user.role)) {
+              link.style.display = 'none';
+            }
+          });
+          
+          // Hide admin options if not admin
+          if (!user.is_admin) {
+            document.querySelectorAll('.admin-link').forEach(link => {
+              link.style.display = 'none';
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error filtering navigation:', error);
+      }
+    }
+    
+    // Run after page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', filterNavigation);
+    } else {
+      filterNavigation();
+    }
+
   </script>
 </body>
-</html>
+</ht

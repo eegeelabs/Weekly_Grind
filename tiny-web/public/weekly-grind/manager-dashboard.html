@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manager Dashboard - Weekly Grind</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="/weekly-grind/js/auth-check.js"></script>
+  
+  <style>
+    /* Same styles as supervisor dashboard */
+    :root {
+      --bg: #0b1120;
+      --panel: #111827;
+      --text: #e5e7eb;
+      --muted: #9ca3b8;
+      --line: #1f2937;
+      --accent: #4f46e5;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      background: #1a2332;
+      padding: 1rem 1.5rem;
+      border-bottom: 2px solid #2a3a52;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .unified-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+      max-width: 1800px;
+      margin: 0 auto;
+    }
+    .header-content {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      flex: 1;
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .header-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin: 0;
+    }
+    .wg-main-nav {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .wg-nav-link {
+      font-size: 0.85rem;
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      border: 1px solid #2a3a52;
+      background: #1a2332;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .wg-nav-link:hover {
+      border-color: var(--accent);
+      background: #111827;
+      color: #e5e7eb;
+    }
+    .wg-nav-link.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      font-weight: 500;
+    }
+    .profile-section {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-shrink: 0;
+    }
+    .user-info-text {
+      font-size: 0.95rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+    .small-profile-icon {
+      width: 40px;
+      height: 40px;
+      background-color: #3498db;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: white;
+    }
+    .logout-btn {
+      background: #4a5568;
+      color: #e5e7eb;
+      border: none;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+    .logout-btn:hover { background: #5a6578; }
+    .container {
+      max-width: 1800px;
+      margin: 0 auto;
+      padding: 1.5rem;
+    }
+    .dashboard-header {
+      margin-bottom: 2rem;
+    }
+    .dashboard-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0 0 0.5rem 0;
+    }
+    .dashboard-subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1.5rem;
+      transition: transform 0.2s;
+    }
+    .stat-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--accent);
+    }
+    .stat-label {
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.5rem;
+    }
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.25rem;
+    }
+    .stat-change {
+      font-size: 0.85rem;
+      color: var(--success);
+    }
+    .section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--line);
+    }
+    .section-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--text);
+      margin: 0;
+    }
+    .team-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+    .team-card {
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 1rem;
+    }
+    .team-card:hover {
+      border-color: var(--accent);
+    }
+    .team-name {
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+    .team-stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.25rem 0;
+      font-size: 0.85rem;
+    }
+    .team-stat-label { color: var(--muted); }
+    .team-stat-value { color: var(--text); font-weight: 600; }
+    .loading {
+      text-align: center;
+      padding: 3rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="unified-header">
+      <div class="header-content">
+        <div class="header-row">
+          <strong class="header-title">Manager Dashboard</strong>
+        </div>
+        <div class="header-row">
+          <nav class="wg-main-nav">
+            <a href="/weekly-grind/view" class="wg-nav-link">Schedule View</a>
+            <a href="/weekly-grind/projects" class="wg-nav-link">Projects</a>
+            <a href="/weekly-grind/repair-reimage" class="wg-nav-link">Repair & Reimage</a>
+            <a href="/weekly-grind/decom-checkin" class="wg-nav-link">Equipment Check-In</a>
+            <a href="/weekly-grind/scheduling" class="wg-nav-link">Scheduling</a>
+            <a href="/weekly-grind/manager-dashboard" class="wg-nav-link active">Dashboard</a>
+            <a href="/weekly-grind/admin/stage-timeframes" class="wg-nav-link">Stage Time Frames</a>
+            <a href="/weekly-grind/users" class="wg-nav-link">Users & Roles</a>
+          </nav>
+        </div>
+      </div>
+      <div class="profile-section">
+        <span class="user-info-text" id="userInfoRight">Loading...</span>
+        <div class="small-profile-icon" id="smallAvatar">👤</div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="dashboard-header">
+      <h1 class="dashboard-title">Manager Overview</h1>
+      <p class="dashboard-subtitle">Organization-wide metrics and team performance</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Staff</div>
+        <div class="stat-value" id="statTotalStaff">-</div>
+        <div class="stat-change">Active employees</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Active Projects</div>
+        <div class="stat-value" id="statActiveProjects">-</div>
+        <div class="stat-change">In progress</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Supervisors</div>
+        <div class="stat-value" id="statSupervisors">-</div>
+        <div class="stat-change">Team leads</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Completion Rate</div>
+        <div class="stat-value" id="statCompletionRate">-</div>
+        <div class="stat-change">This period</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Teams Overview</h2>
+      </div>
+      <div class="team-grid" id="teamsGrid">
+        <div class="loading">Loading teams...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/auth/me', { credentials: 'include' });
+        if (response.ok) {
+          const user = await response.json();
+          const displayName = user.display_name || user.username;
+          document.getElementById('smallAvatar').textContent = user.avatar || '👤';
+          document.getElementById('userInfoRight').textContent = `${displayName} (${user.role.charAt(0).toUpperCase() + user.role.slice(1)})`;
+          loadDashboard();
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    async function loadDashboard() {
+      try {
+        const [users, projects, relations] = await Promise.all([
+          fetch('/api/users').then(r => r.json()),
+          fetch('/api/projects').then(r => r.json()),
+          fetch('/api/user-relations').then(r => r.json())
+        ]);
+
+        document.getElementById('statTotalStaff').textContent = users.filter(u => u.is_active).length;
+        document.getElementById('statActiveProjects').textContent = projects.filter(p => p.status !== 'complete').length;
+        document.getElementById('statSupervisors').textContent = users.filter(u => u.role === 'supervisor').length;
+        document.getElementById('statCompletionRate').textContent = '-';
+
+        renderTeams(users, relations);
+      } catch (error) {
+        console.error('Error loading dashboard:', error);
+      }
+    }
+
+    function renderTeams(users, relations) {
+      const supervisors = users.filter(u => u.role === 'supervisor');
+      const grid = document.getElementById('teamsGrid');
+      
+      if (supervisors.length === 0) {
+        grid.innerHTML = '<div class="loading">No teams found</div>';
+        return;
+      }
+
+      grid.innerHTML = supervisors.map(sup => {
+        const techCount = relations.supervisorTechs.filter(st => st.supervisor_id === sup.id).length;
+        return `
+          <div class="team-card">
+            <div class="team-name">${sup.display_name || sup.username}'s Team</div>
+            <div class="team-stat">
+              <span class="team-stat-label">Team Members:</span>
+              <span class="team-stat-value">${techCount}</span>
+            </div>
+            <div class="team-stat">
+              <span class="team-stat-label">Active Projects:</span>
+              <span class="team-stat-value">-</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function logout() {
+      await fetch('/auth/logout', { method: 'POST' });
+      window.location.href = '/weekly-grind/login';
+    }
+
+    loadUserInfo();
+  </script>
+</body>
+</html>
